@@ -1,0 +1,250 @@
+{
+  "request": "GET /lists/members?listId=84839422",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "list": {
+        "members_timeline": {
+          "timeline": {
+            "instructions": [
+              {
+                "type": "TimelineClearCache"
+              },
+              {
+                "direction": "Top",
+                "type": "TimelineTerminateTimeline"
+              },
+              {
+                "entries": [
+                  {
+                    "content": {
+                      "__typename": "TimelineTimelineItem",
+                      "clientEventInfo": {
+                        "component": "MembersSgs",
+                        "element": "user"
+                      },
+                      "entryType": "TimelineTimelineItem",
+                      "itemContent": {
+                        "__typename": "TimelineUser",
+                        "itemType": "TimelineUser",
+                        "userDisplayType": "User",
+                        "user_results": {
+                          "result": {
+                            "__typename": "User",
+                            "affiliates_highlighted_label": {},
+                            "avatar": {
+                              "image_url": "https://pbs.twimg.com/profile_images/1354486384329854984/BXv7J1j2_normal.jpg"
+                            },
+                            "core": {
+                              "created_at": "Mon Mar 30 21:02:29 +0000 2020",
+                              "name": "Twitter Thailand",
+                              "screen_name": "TwitterThailand"
+                            },
+                            "dm_permissions": {
+                              "can_dm": false
+                            },
+                            "follow_request_sent": false,
+                            "has_graduated_access": true,
+                            "id": "VXNlcjoxMjQ0NzMxNDkxMDg4ODA5OTg0",
+                            "is_blue_verified": false,
+                            "legacy": {
+                              "default_profile": true,
+                              "default_profile_image": false,
+                              "description": "Please follow @X for updates.",
+                              "entities": {
+                                "description": {}
+                              },
+                              "fast_followers_count": 0,
+                              "favourites_count": 16,
+                              "follow_request_sent": false,
+                              "followers_count": 37828,
+                              "friends_count": 16,
+                              "has_custom_timelines": true,
+                              "is_translator": false,
+                              "listed_count": 39,
+                              "media_count": 333,
+                              "needs_phone_verification": false,
+                              "normal_followers_count": 37828,
+                              "notifications": false,
+                              "pinned_tweet_ids_str": [
+                                "1580793959307436032"
+                              ],
+                              "possibly_sensitive": false,
+                              "profile_banner_url": "https://pbs.twimg.com/profile_banners/1244731491088809984/1611791443",
+                              "profile_interstitial_type": "",
+                              "statuses_count": 1263,
+                              "time_zone": "",
+                              "translator_type": "none",
+                              "url": "",
+                              "utc_offset": 0,
+                              "want_retweets": false,
+                              "withheld_description": "",
+                              "withheld_scope": ""
+                            },
+                            "location": {
+                              "location": ""
+                            },
+                            "media_permissions": {
+                              "can_media_tag": false
+                            },
+                            "parody_commentary_fan_label": "None",
+                            "privacy": {
+                              "protected": true
+                            },
+                            "profile_bio": {
+                              "description": "Please follow @X for updates."
+                            },
+                            "profile_description_language": "en",
+                            "profile_image_shape": "Circle",
+                            "relationship_perspectives": {
+                              "blocked_by": false,
+                              "blocking": false,
+                              "followed_by": false,
+                              "following": false,
+                              "muting": false
+                            },
+                            "rest_id": "1244731491088809984",
+                            "super_follow_eligible": false,
+                            "super_followed_by": false,
+                            "super_following": false,
+                            "verification": {
+                              "verified": false
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "entryId": "user-1244731491088809984",
+                    "sortIndex": "2109016359324090367"
+                  },
+                  {
+                    "content": {
+                      "__typename": "TimelineTimelineItem",
+                      "clientEventInfo": {
+                        "component": "MembersSgs",
+                        "element": "user"
+                      },
+                      "entryType": "TimelineTimelineItem",
+                      "itemContent": {
+                        "__typename": "TimelineUser",
+                        "itemType": "TimelineUser",
+                        "userDisplayType": "User",
+                        "user_results": {
+                          "result": {
+                            "__typename": "User",
+                            "affiliates_highlighted_label": {},
+                            "avatar": {
+                              "image_url": "https://pbs.twimg.com/profile_images/1580568780828250114/QNLIImWZ_normal.jpg"
+                            },
+                            "core": {
+                              "created_at": "Tue Sep 03 19:59:02 +0000 2019",
+                              "name": "Twitter Able",
+                              "screen_name": "TwitterAble"
+                            },
+                            "dm_permissions": {
+                              "can_dm": false
+                            },
+                            "follow_request_sent": false,
+                            "has_graduated_access": true,
+                            "id": "VXNlcjoxMTY4OTc2NjgwODY3NzYyMTc3",
+                            "is_blue_verified": false,
+                            "legacy": {
+                              "default_profile": true,
+                              "default_profile_image": false,
+                              "description": "Please follow @X for updates.",
+                              "entities": {
+                                "description": {}
+                              },
+                              "fast_followers_count": 0,
+                              "favourites_count": 504,
+                              "follow_request_sent": false,
+                              "followers_count": 9423,
+                              "friends_count": 79,
+                              "has_custom_timelines": true,
+                              "is_translator": false,
+                              "listed_count": 167,
+                              "media_count": 20,
+                              "needs_phone_verification": false,
+                              "normal_followers_count": 9423,
+                              "notifications": false,
+                              "pinned_tweet_ids_str": [
+                                "1580570198612250625"
+                              ],
+                              "possibly_sensitive": false,
+                              "profile_banner_url": "https://pbs.twimg.com/profile_banners/1168976680867762177/1665671940",
+                              "profile_interstitial_type": "",
+                              "statuses_count": 226,
+                              "time_zone": "",
+                              "translator_type": "none",
+                              "url": "",
+                              "utc_offset": 0,
+                              "want_retweets": false,
+                              "withheld_description": "",
+                              "withheld_scope": ""
+                            },
+                            "location": {
+                              "location": ""
+                            },
+                            "media_permissions": {
+                              "can_media_tag": false
+                            },
+                            "parody_commentary_fan_label": "None",
+                            "privacy": {
+                              "protected": true
+                            },
+                            "profile_bio": {
+                              "description": "Please follow @X for updates."
+                            },
+                            "profile_description_language": "en",
+                            "profile_image_shape": "Circle",
+                            "relationship_perspectives": {
+                              "blocked_by": false,
+                              "blocking": false,
+                              "followed_by": false,
+                              "following": false,
+                              "muting": false
+                            },
+                            "rest_id": "1168976680867762177",
+                            "super_follow_eligible": false,
+                            "super_followed_by": false,
+                            "super_following": false,
+                            "verification": {
+                              "verified": false
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "entryId": "user-1168976680867762177",
+                    "sortIndex": "2109016359324090366"
+                  },
+                  {
+                    "content": {
+                      "__typename": "TimelineTimelineCursor",
+                      "cursorType": "Bottom",
+                      "entryType": "TimelineTimelineCursor",
+                      "value": "1000000000000000000|2109016359324090346"
+                    },
+                    "entryId": "cursor-bottom-2109016359324090348",
+                    "sortIndex": "2109016359324090348"
+                  },
+                  {
+                    "content": {
+                      "__typename": "TimelineTimelineCursor",
+                      "cursorType": "Top",
+                      "entryType": "TimelineTimelineCursor",
+                      "value": "-1|2109016359324090369"
+                    },
+                    "entryId": "cursor-top-2109016359324090369",
+                    "sortIndex": "2109016359324090369"
+                  }
+                ],
+                "type": "TimelineAddEntries"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

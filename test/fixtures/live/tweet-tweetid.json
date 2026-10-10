@@ -1,0 +1,454 @@
+{
+  "request": "GET /tweet/2019881223666233717",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "threaded_conversation_with_injections_v2": {
+        "instructions": [
+          {
+            "type": "TimelineClearCache"
+          },
+          {
+            "entries": [
+              {
+                "content": {
+                  "__typename": "TimelineTimelineItem",
+                  "clientEventInfo": {
+                    "component": "tweet",
+                    "element": "tweet"
+                  },
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "__typename": "TimelineTweet",
+                    "itemType": "TimelineTweet",
+                    "tweetDisplayType": "SelfThread",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "card": {
+                          "legacy": {
+                            "binding_values": [
+                              {
+                                "key": "photo_image_full_size_large",
+                                "value": {
+                                  "image_value": {
+                                    "height": 419,
+                                    "url": "https://pbs.twimg.com/card_img/2107952823128182784/RyT0hE6P?format=jpg&name=800x419",
+                                    "width": 800
+                                  },
+                                  "type": "IMAGE"
+                                }
+                              },
+                              {
+                                "key": "thumbnail_image",
+                                "value": {
+                                  "image_value": {
+                                    "height": 150,
+                                    "url": "https://pbs.twimg.com/card_img/2107952823128182784/RyT0hE6P?format=jpg&name=280x150",
+                                    "width": 218
+                                  },
+                                  "type": "IMAGE"
+                                }
+                              },
+                              {
+                                "key": "description",
+                                "value": {
+                                  "string_value": "Use the X API with an all-new Developer Console and consumption-based billing. No fixed monthly costs, no monthly caps.",
+                                  "type": "STRING"
+                                }
+                              }
+                            ],
+                            "card_platform": {
+                              "platform": {
+                                "audience": {
+                                  "name": "production"
+                                },
+                                "device": {
+                                  "name": "Swift",
+                                  "version": "12"
+                                }
+                              }
+                            },
+                            "name": "summary_large_image",
+                            "url": "https://t.co/FS66GuIYJD",
+                            "user_refs_results": []
+                          },
+                          "rest_id": "https://t.co/FS66GuIYJD"
+                        },
+                        "core": {
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "affiliates_highlighted_label": {
+                                "label": {
+                                  "badge": {
+                                    "url": "https://pbs.twimg.com/profile_images/1955359038532653056/OSHY3ewP_bigger.jpg"
+                                  },
+                                  "description": "X",
+                                  "url": {
+                                    "url": "https://twitter.com/X",
+                                    "urlType": "DeepLink"
+                                  },
+                                  "userLabelDisplayType": "Badge",
+                                  "userLabelType": "BusinessLabel"
+                                }
+                              },
+                              "has_graduated_access": true,
+                              "id": "VXNlcjoyMjQ0OTk0OTQ1",
+                              "is_blue_verified": true,
+                              "legacy": {
+                                "blocked_by": false,
+                                "blocking": false,
+                                "can_dm": true,
+                                "can_media_tag": true,
+                                "created_at": "Sat Dec 14 04:35:55 +0000 2013",
+                                "default_profile": false,
+                                "default_profile_image": false,
+                                "description": "The voice of the X Dev team and your official source for updates, news, and events, related to the X API.",
+                                "entities": {
+                                  "description": {},
+                                  "url": {
+                                    "urls": [
+                                      {
+                                        "display_url": "docs.x.com",
+                                        "expanded_url": "https://docs.x.com/",
+                                        "indices": [
+                                          0,
+                                          23
+                                        ],
+                                        "url": "https://t.co/NIwHVIVyrN"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "fast_followers_count": 0,
+                                "favourites_count": 2758,
+                                "follow_request_sent": false,
+                                "followed_by": false,
+                                "followers_count": 698057,
+                                "following": false,
+                                "friends_count": 770,
+                                "has_custom_timelines": true,
+                                "is_translator": false,
+                                "listed_count": 2977,
+                                "location": "127.0.0.1",
+                                "media_count": 832,
+                                "muting": false,
+                                "name": "Developers",
+                                "needs_phone_verification": false,
+                                "normal_followers_count": 698057,
+                                "notifications": false,
+                                "pinned_tweet_ids_str": [
+                                  "2019881223666233717"
+                                ],
+                                "possibly_sensitive": false,
+                                "profile_banner_url": "https://pbs.twimg.com/profile_banners/2244994945/1690213128",
+                                "profile_image_url_https": "https://pbs.twimg.com/profile_images/1683501992314798080/xl1POYLw_normal.jpg",
+                                "profile_interstitial_type": "",
+                                "protected": false,
+                                "screen_name": "XDevelopers",
+                                "statuses_count": 4376,
+                                "time_zone": "",
+                                "translator_type": "regular",
+                                "url": "https://t.co/NIwHVIVyrN",
+                                "utc_offset": 0,
+                                "verified": false,
+                                "verified_type": "Business",
+                                "want_retweets": false,
+                                "withheld_description": "",
+                                "withheld_scope": ""
+                              },
+                              "parody_commentary_fan_label": "None",
+                              "professional": {
+                                "category": [
+                                  {
+                                    "icon_name": "IconBriefcaseStroke",
+                                    "id": 1009,
+                                    "name": "Community"
+                                  }
+                                ],
+                                "professional_type": "Business",
+                                "rest_id": "1516891231749517312"
+                              },
+                              "profile_image_shape": "Square",
+                              "rest_id": "2244994945",
+                              "super_follow_eligible": false,
+                              "super_followed_by": false,
+                              "super_following": false,
+                              "tipjar_settings": {}
+                            }
+                          }
+                        },
+                        "edit_control": {
+                          "edit_tweet_ids": [
+                            "2019881223666233717"
+                          ],
+                          "editable_until_msecs": "1770415785000",
+                          "edits_remaining": "5",
+                          "is_edit_eligible": false
+                        },
+                        "grok_analysis_button": true,
+                        "has_birdwatch_notes": false,
+                        "is_translatable": false,
+                        "legacy": {
+                          "bookmark_count": 2802,
+                          "bookmarked": false,
+                          "conversation_id_str": "2019881223666233717",
+                          "created_at": "Fri Feb 06 21:09:45 +0000 2026",
+                          "display_text_range": [
+                            0,
+                            261
+                          ],
+                          "entities": {
+                            "urls": [
+                              {
+                                "display_url": "developer.x.com",
+                                "expanded_url": "http://developer.x.com",
+                                "indices": [
+                                  238,
+                                  261
+                                ],
+                                "url": "https://t.co/FS66GuIYJD"
+                              }
+                            ]
+                          },
+                          "favorite_count": 5599,
+                          "favorited": false,
+                          "full_text": "Officially launching X API Pay-Per-Use\n\nThe core of X developers are indie builders, early stage products, startups, and hobbyists\n\nIt’s time to open up our X API ecosystem and instill a new wave of next generation X apps\n\nWe’re so back. https://t.co/FS66GuIYJD",
+                          "id_str": "2019881223666233717",
+                          "is_quote_status": false,
+                          "lang": "en",
+                          "possibly_sensitive": false,
+                          "possibly_sensitive_editable": true,
+                          "quote_count": 596,
+                          "reply_count": 791,
+                          "retweet_count": 896,
+                          "retweeted": false,
+                          "user_id_str": "2244994945"
+                        },
+                        "quick_promote_eligibility": {
+                          "eligibility": "IneligibleNotVerified"
+                        },
+                        "rest_id": "2019881223666233717",
+                        "unmention_data": {},
+                        "views": {
+                          "count": "2552259",
+                          "state": "EnabledWithCount"
+                        }
+                      }
+                    }
+                  }
+                },
+                "entryId": "tweet-2019881223666233717",
+                "sortIndex": "2109014742273097728"
+              },
+              {
+                "content": {
+                  "__typename": "TimelineTimelineModule",
+                  "clientEventInfo": {
+                    "component": "tweet",
+                    "details": {
+                      "conversationDetails": {
+                        "conversationSection": "HighQuality"
+                      },
+                      "timelinesDetails": {
+                        "controllerData": "DAACDAAEDAABCgABAAAAAAAAAAEKAAIAAAAAAAAAAAoAAwAAAaEnc/NsAAAAAA=="
+                      }
+                    }
+                  },
+                  "displayType": "VerticalConversation",
+                  "entryType": "TimelineTimelineModule",
+                  "items": [
+                    {
+                      "entryId": "conversationthread-2000000000000000001-tweet-2000000000000000001",
+                      "item": {
+                        "clientEventInfo": {
+                          "component": "tweet",
+                          "details": {
+                            "conversationDetails": {
+                              "conversationSection": "HighQuality"
+                            },
+                            "timelinesDetails": {
+                              "controllerData": "DAACDAAEDAABCgABAAAAAAAAAAEKAAIAAAAAAAAAAAoAAwAAAaEnc/NsAAAAAA=="
+                            }
+                          },
+                          "element": "tweet"
+                        },
+                        "itemContent": {
+                          "__typename": "TimelineTweet",
+                          "itemType": "TimelineTweet",
+                          "tweetDisplayType": "Tweet",
+                          "tweet_results": {
+                            "result": {
+                              "__typename": "Tweet",
+                              "core": {
+                                "user_results": {
+                                  "result": {
+                                    "__typename": "User",
+                                    "affiliates_highlighted_label": {},
+                                    "has_graduated_access": true,
+                                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                                    "is_blue_verified": true,
+                                    "legacy": {
+                                      "blocked_by": false,
+                                      "blocking": false,
+                                      "can_dm": false,
+                                      "can_media_tag": true,
+                                      "created_at": "Sat Mar 13 22:14:37 +0000 2021",
+                                      "default_profile": true,
+                                      "default_profile_image": false,
+                                      "description": "Example",
+                                      "entities": {
+                                        "description": {}
+                                      },
+                                      "fast_followers_count": 0,
+                                      "favourites_count": 4175,
+                                      "follow_request_sent": false,
+                                      "followed_by": false,
+                                      "followers_count": 304,
+                                      "following": false,
+                                      "friends_count": 191,
+                                      "has_custom_timelines": false,
+                                      "is_translator": false,
+                                      "listed_count": 0,
+                                      "location": "Example",
+                                      "media_count": 3,
+                                      "muting": false,
+                                      "name": "Example User 1",
+                                      "needs_phone_verification": false,
+                                      "normal_followers_count": 304,
+                                      "notifications": false,
+                                      "pinned_tweet_ids_str": [
+                                        "2006399550169243799"
+                                      ],
+                                      "possibly_sensitive": false,
+                                      "profile_banner_url": "https://pbs.twimg.com/profile_banners/1000000000000000000/1700000000",
+                                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg",
+                                      "profile_interstitial_type": "",
+                                      "protected": false,
+                                      "screen_name": "example_user_1",
+                                      "statuses_count": 2436,
+                                      "time_zone": "",
+                                      "translator_type": "none",
+                                      "url": "",
+                                      "utc_offset": 0,
+                                      "verified": false,
+                                      "want_retweets": false,
+                                      "withheld_description": "",
+                                      "withheld_scope": ""
+                                    },
+                                    "parody_commentary_fan_label": "None",
+                                    "profile_image_shape": "Circle",
+                                    "rest_id": "1000000000000000001",
+                                    "super_follow_eligible": false,
+                                    "super_followed_by": false,
+                                    "super_following": false,
+                                    "tipjar_settings": {}
+                                  }
+                                }
+                              },
+                              "edit_control": {
+                                "edit_tweet_ids": [
+                                  "2000000000000000001"
+                                ],
+                                "editable_until_msecs": "1770442796000",
+                                "edits_remaining": "5",
+                                "is_edit_eligible": false
+                              },
+                              "grok_analysis_button": true,
+                              "has_birdwatch_notes": false,
+                              "is_translatable": false,
+                              "legacy": {
+                                "bookmark_count": 8,
+                                "bookmarked": false,
+                                "conversation_id_str": "2019881223666233717",
+                                "created_at": "Sat Feb 07 04:39:56 +0000 2026",
+                                "display_text_range": [
+                                  13,
+                                  170
+                                ],
+                                "entities": {
+                                  "user_mentions": [
+                                    {
+                                      "id_str": "2244994945",
+                                      "indices": [
+                                        0,
+                                        12
+                                      ],
+                                      "name": "Example User",
+                                      "screen_name": "example_user"
+                                    }
+                                  ]
+                                },
+                                "favorite_count": 259,
+                                "favorited": false,
+                                "full_text": "Example text.",
+                                "id_str": "2000000000000000001",
+                                "in_reply_to_screen_name": "XDevelopers",
+                                "in_reply_to_status_id_str": "2019881223666233717",
+                                "in_reply_to_user_id_str": "2244994945",
+                                "is_quote_status": false,
+                                "lang": "en",
+                                "quote_count": 2,
+                                "reply_count": 13,
+                                "retweet_count": 13,
+                                "retweeted": false,
+                                "user_id_str": "1000000000000000001"
+                              },
+                              "quick_promote_eligibility": {
+                                "eligibility": "IneligibleNotVerified"
+                              },
+                              "rest_id": "2000000000000000001",
+                              "unmention_data": {},
+                              "views": {
+                                "count": "18085",
+                                "state": "EnabledWithCount"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "metadata": {
+                    "conversationMetadata": {
+                      "allTweetIds": [
+                        "2000000000000000001"
+                      ],
+                      "enableDeduplication": true
+                    }
+                  }
+                },
+                "entryId": "conversationthread-2000000000000000001",
+                "sortIndex": "2109014742273097678"
+              },
+              {
+                "content": {
+                  "__typename": "TimelineTimelineCursor",
+                  "cursorType": "Bottom",
+                  "entryType": "TimelineTimelineCursor",
+                  "value": "DAAKCgABHUS5u-s__qkLAAIAAAGoRW1QQzZ3QUFBZlEvZ0dKTjB2R3AvQUFBQUNVY0NSME1jcHB3Ymh3SVJYV2dsc0JPSEFpQW5USWFNTFVjQ0E5R2NWcHgxeHdJRDBZb1ZvRDBIQWdlT0QrYWNQSWNDQ3VkYk5weFBCd0lMZDFXMXBDSUhBaUdnTTRhY0dRY0NHYVhWaGZSTEJ3STBDV1FHekZHSEFrQ0lDNlh3YzhjQ0E5RjI1cVFyaHdJV3F4Sm0wRWFIQWh4bHBkYWNYa2NDQlFCNU5hd3FSd0lmbkdrRnlHU0hBaHZBem1iTU8wY0NEUVBYZGR4b1J3SUhKZ3hWb0hCSEFnUFJXa2JjWFVjQ0hUZ2pOcHd1aHdKTXlsNlZpQzVIQWl0bHo0YndlUWNDSjY2ZFJweGFod0lobGlCbTJFMEhBaWFobkZYa0JNY0NqdWpqNW9ndEJ3SW1mUnhHaUVSSEFpbzEwWWJnSlFjQ0NaR0hWcHdtQndJa0tXQmxwQWFIQWgyVHYyYUFSMGNDS21wRDVleHF4d0lIZTd3bDZGd0hBaGZDMXNia1dVY0NJeWFQNVpoaFE9PQgAAwAAAAILAAQAAAAGQm90dG9tAAA"
+                },
+                "entryId": "cursor-bottom-2109014742273097387",
+                "sortIndex": "2109014742273097387"
+              }
+            ],
+            "type": "TimelineAddEntries"
+          },
+          {
+            "direction": "Top",
+            "type": "TimelineTerminateTimeline"
+          }
+        ],
+        "metadata": {
+          "reader_mode_config": {
+            "is_reader_mode_available": true
+          },
+          "scribeConfig": {
+            "page": "ranked_replies"
+          }
+        }
+      }
+    }
+  }
+}

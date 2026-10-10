@@ -137,6 +137,10 @@ Pass next_cursor as `cursor` to get the next page.
 {"data":{...}}
 ```
 
+On the last page the header reads `next_cursor: none (last page, no more results)`. That happens
+when the response has no next cursor (empty likes or likers timelines included), when X returns
+the cursor you just sent, or when a page holds only cursors and no results.
+
 ### Errors
 
 API errors come back as tool errors with a short explanation, for example:

@@ -1,0 +1,14 @@
+{
+  "request": "GET /user/2244994945/likes",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "user": {
+        "result": {
+          "__typename": "User",
+          "timeline": {}
+        }
+      }
+    }
+  }
+}

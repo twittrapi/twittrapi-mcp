@@ -6,6 +6,23 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The cursor header reports the last page (`next_cursor: none (last page, no more results)`) when
+  X returns the cursor that was just sent, or a page with cursors but no results, instead of
+  offering a cursor that loops.
+- A Bottom cursor entry always wins over a plain `next_cursor` field, and `cursor-bottom-` entries
+  whose value sits under `content.itemContent` are recognised.
+- The Top cursor is no longer printed as `previous_cursor`; it is not a next-page cursor.
+- `username` on user timelines is trimmed before validation, and a bare `@` is rejected instead of
+  being sent as an empty handle.
+
+### Added
+
+- Tests against trimmed real API responses (`test/fixtures/live`): every paginated shape,
+  followers (Bottom before Top), tweet detail, the search wrapper, slice `next_cursor`
+  (communities, jobs) and empty likes/favorites timelines.
+
 ## [0.1.0] - 2026-10-10
 
 ### Added

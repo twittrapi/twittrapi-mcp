@@ -52,11 +52,11 @@ describe("formatResult", () => {
     const big = { ...timeline, padding: "y".repeat(10_000) };
     const out = formatResult(big, { maxChars: 1000, paginated: true });
     expect(out.split("\n")[0]).toBe("next_cursor: BOTTOM_CUR");
-    expect(out).toContain("previous_cursor: TOP_CUR");
+    expect(out).not.toContain("previous_cursor"); // Top cursors are never offered as a page cursor
     expect(out).toContain("[TRUNCATED");
   });
   it("says when no cursor was found", () => {
-    expect(formatResult({}, { paginated: true })).toMatch(/^next_cursor: none found/);
+    expect(formatResult({}, { paginated: true })).toMatch(/^next_cursor: none \(last page/);
   });
   it("omits the cursor header for non-paginated tools", () => {
     expect(formatResult({ a: 1 }, { paginated: false })).toBe('{"a":1}');

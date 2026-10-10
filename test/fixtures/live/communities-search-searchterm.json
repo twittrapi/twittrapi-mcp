@@ -1,0 +1,339 @@
+{
+  "request": "GET /communities/search/openai",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "communities_search_slice": {
+        "items_results": [
+          {
+            "id": "Q29tbXVuaXR5UmVzdWx0czoxNzYyNDk0Mjc2NTY1NDI2NTky",
+            "result": {
+              "__typename": "Community",
+              "custom_banner_media": {
+                "id": "QXBpTWVkaWE6DAATCgABG9hLw10WsAAAAA==",
+                "media_info": {
+                  "__typename": "ApiImage",
+                  "color_info": {
+                    "palette": [
+                      {
+                        "percentage": 71.75,
+                        "rgb": {
+                          "blue": 74,
+                          "green": 45,
+                          "red": 21
+                        }
+                      },
+                      {
+                        "percentage": 14.72,
+                        "rgb": {
+                          "blue": 119,
+                          "green": 61,
+                          "red": 28
+                        }
+                      },
+                      {
+                        "percentage": 8.78,
+                        "rgb": {
+                          "blue": 19,
+                          "green": 8,
+                          "red": 4
+                        }
+                      },
+                      {
+                        "percentage": 3.89,
+                        "rgb": {
+                          "blue": 190,
+                          "green": 141,
+                          "red": 75
+                        }
+                      },
+                      {
+                        "percentage": 0.17,
+                        "rgb": {
+                          "blue": 189,
+                          "green": 120,
+                          "red": 56
+                        }
+                      }
+                    ]
+                  },
+                  "original_img_height": 720,
+                  "original_img_url": "https://pbs.twimg.com/community_banner_img/2006436936446029824/n1OK-QV1?format=jpg&name=orig",
+                  "original_img_width": 1800,
+                  "salient_rect": {
+                    "height": 1,
+                    "left": 899,
+                    "top": 360,
+                    "width": 1
+                  }
+                }
+              },
+              "default_banner_media": {
+                "id": "QXBpTWVkaWE6DAABCgABFECTH+kUUAQKAAITiFWq8lUQBAAA",
+                "media_info": {
+                  "__typename": "ApiImage",
+                  "color_info": {
+                    "palette": [
+                      {
+                        "percentage": 57.34,
+                        "rgb": {
+                          "blue": 178,
+                          "green": 171,
+                          "red": 3
+                        }
+                      },
+                      {
+                        "percentage": 23.51,
+                        "rgb": {
+                          "blue": 129,
+                          "green": 117,
+                          "red": 247
+                        }
+                      },
+                      {
+                        "percentage": 6.99,
+                        "rgb": {
+                          "blue": 159,
+                          "green": 149,
+                          "red": 224
+                        }
+                      },
+                      {
+                        "percentage": 4.78,
+                        "rgb": {
+                          "blue": 194,
+                          "green": 188,
+                          "red": 159
+                        }
+                      },
+                      {
+                        "percentage": 1.32,
+                        "rgb": {
+                          "blue": 103,
+                          "green": 90,
+                          "red": 246
+                        }
+                      }
+                    ]
+                  },
+                  "original_img_height": 480,
+                  "original_img_url": "https://pbs.twimg.com/media/FECTH-kUUAQMe8W.jpg",
+                  "original_img_width": 1200
+                }
+              },
+              "id": "Q29tbXVuaXR5OjE3NjI0OTQyNzY1NjU0MjY1OTI=",
+              "is_nsfw": false,
+              "member_count": 30718,
+              "members_facepile_results": [
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwMQ==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                },
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwMg==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAy",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                },
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwMw==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAz",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                },
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwNA==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDA0",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                },
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwNQ==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDA1",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                }
+              ],
+              "name": "AI — Rumors & Insights",
+              "primary_community_topic": {
+                "topic_name": "Artificial Intelligence"
+              },
+              "rest_id": "1762494276565426592"
+            }
+          },
+          {
+            "id": "Q29tbXVuaXR5UmVzdWx0czoxNTA4NzUwODc1NDQyOTU0MjQy",
+            "result": {
+              "__typename": "Community",
+              "custom_banner_media": {
+                "id": "QXBpTWVkaWE6DAATCgABHHL2kB/XcAAAAA==",
+                "media_info": {
+                  "__typename": "ApiImage",
+                  "color_info": {
+                    "palette": [
+                      {
+                        "percentage": 99.95,
+                        "rgb": {
+                          "blue": 11,
+                          "green": 11,
+                          "red": 11
+                        }
+                      }
+                    ]
+                  },
+                  "original_img_height": 440,
+                  "original_img_url": "https://pbs.twimg.com/community_banner_img/2049971879276933120/A_mSn7Qy?format=jpg&name=orig",
+                  "original_img_width": 1100,
+                  "salient_rect": {
+                    "height": 1,
+                    "left": 550,
+                    "top": 220,
+                    "width": 1
+                  }
+                }
+              },
+              "default_banner_media": {
+                "id": "QXBpTWVkaWE6DAABCgABFECQ6xrUUAQKAAITiFWq8lUQBAAA",
+                "media_info": {
+                  "__typename": "ApiImage",
+                  "color_info": {
+                    "palette": [
+                      {
+                        "percentage": 29.58,
+                        "rgb": {
+                          "blue": 254,
+                          "green": 224,
+                          "red": 148
+                        }
+                      },
+                      {
+                        "percentage": 26.24,
+                        "rgb": {
+                          "blue": 0,
+                          "green": 154,
+                          "red": 252
+                        }
+                      },
+                      {
+                        "percentage": 17.11,
+                        "rgb": {
+                          "blue": 6,
+                          "green": 191,
+                          "red": 252
+                        }
+                      },
+                      {
+                        "percentage": 7.49,
+                        "rgb": {
+                          "blue": 192,
+                          "green": 213,
+                          "red": 177
+                        }
+                      },
+                      {
+                        "percentage": 7.44,
+                        "rgb": {
+                          "blue": 0,
+                          "green": 129,
+                          "red": 252
+                        }
+                      }
+                    ]
+                  },
+                  "original_img_height": 480,
+                  "original_img_url": "https://pbs.twimg.com/media/FECQ6xrUUAQP6u9.jpg",
+                  "original_img_width": 1200
+                }
+              },
+              "id": "Q29tbXVuaXR5OjE1MDg3NTA4NzU0NDI5NTQyNDI=",
+              "is_nsfw": false,
+              "member_count": 41701,
+              "members_facepile_results": [
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwNg==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDA2",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                },
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwNw==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDA3",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                },
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwOA==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDA4",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                },
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwOQ==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDA5",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                },
+                {
+                  "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAxMA==",
+                  "result": {
+                    "__typename": "User",
+                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDEw",
+                    "legacy": {
+                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                    }
+                  }
+                }
+              ],
+              "name": "1337: AI, Python, Data",
+              "primary_community_topic": {
+                "topic_name": "Artificial Intelligence"
+              },
+              "rest_id": "1508750875442954242"
+            }
+          }
+        ],
+        "slice_info": {
+          "next_cursor": "WzExMy41ODc5MSwxODk3OTI3NDQxNDQxNTEzNzE4XQ=="
+        }
+      }
+    }
+  }
+}

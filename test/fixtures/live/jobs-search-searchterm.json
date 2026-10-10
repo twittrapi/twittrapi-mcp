@@ -1,0 +1,105 @@
+{
+  "request": "GET /jobs/search/engineer",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "job_search": {
+        "items_results": [
+          {
+            "id": "QXBpSm9iUmVzdWx0czoxOTMzNjIzMTE4NjY2NTcxNzc2",
+            "rest_id": "1933623118666571776",
+            "result": {
+              "__isJobResult": "ApiJob",
+              "__typename": "ApiJob",
+              "company_profile_results": {
+                "id": "QXBpQ29tcGFueVByb2ZpbGVSZXN1bHRzOjE3NTAzNDAyNDIxMDY4ODQyMDE=",
+                "rest_id": "1750340242106884201",
+                "result": {
+                  "__typename": "ApiCompanyProfile",
+                  "core": {
+                    "name": "Example User 1"
+                  },
+                  "id": "QXBpQ29tcGFueVByb2ZpbGU6MTc1MDM0MDI0MjEwNjg4NDIwMQ==",
+                  "logo": {
+                    "normal_url": "https://pbs.twimg.com/misc_img/1832099493933662208/AsbLJnCG?format=jpg&name=orig&cat=41"
+                  },
+                  "rest_id": "1750340242106884201"
+                }
+              },
+              "core": {
+                "location": "South San Francisco, California, United States",
+                "redirect_url": "https://boards.greenhouse.io/neuralink/jobs/6607398003?gh_jid=6607398003",
+                "title": "Electrical Engineer Intern, Robotics and Surgery Engineering"
+              },
+              "id": "QXBpSm9iOjE5MzM2MjMxMTg2NjY1NzE3NzY=",
+              "user_results": {
+                "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwMQ==",
+                "result": {
+                  "__typename": "User",
+                  "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                  "legacy": {
+                    "name": "Example User 1",
+                    "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg",
+                    "screen_name": "example_user_1",
+                    "verified": false,
+                    "verified_type": "Business"
+                  },
+                  "profile_image_shape": "Square",
+                  "rest_id": "1000000000000000001"
+                }
+              }
+            }
+          },
+          {
+            "id": "QXBpSm9iUmVzdWx0czoyMTA4MzU0NTg0MDAzNjE2NzY4",
+            "rest_id": "2108354584003616768",
+            "result": {
+              "__isJobResult": "ApiJob",
+              "__typename": "ApiJob",
+              "company_profile_results": {
+                "id": "QXBpQ29tcGFueVByb2ZpbGVSZXN1bHRzOjE3NTAzNDAyNDIxMDY4ODQyMDE=",
+                "rest_id": "1750340242106884201",
+                "result": {
+                  "__typename": "ApiCompanyProfile",
+                  "core": {
+                    "name": "Example User 1"
+                  },
+                  "id": "QXBpQ29tcGFueVByb2ZpbGU6MTc1MDM0MDI0MjEwNjg4NDIwMQ==",
+                  "logo": {
+                    "normal_url": "https://pbs.twimg.com/misc_img/1832099493933662208/AsbLJnCG?format=jpg&name=orig&cat=41"
+                  },
+                  "rest_id": "1750340242106884201"
+                }
+              },
+              "core": {
+                "location": "Austin, Texas, United States; South San Francisco, California, United States",
+                "redirect_url": "https://boards.greenhouse.io/neuralink/jobs/8017328003?gh_jid=8017328003",
+                "title": "Rapid Prototyping Technician"
+              },
+              "id": "QXBpSm9iOjIxMDgzNTQ1ODQwMDM2MTY3Njg=",
+              "user_results": {
+                "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwMQ==",
+                "result": {
+                  "__typename": "User",
+                  "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                  "legacy": {
+                    "name": "Example User 1",
+                    "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg",
+                    "screen_name": "example_user_1",
+                    "verified": false,
+                    "verified_type": "Business"
+                  },
+                  "profile_image_shape": "Square",
+                  "rest_id": "1000000000000000001"
+                }
+              }
+            }
+          }
+        ],
+        "slice_info": {
+          "next_cursor": "WzMuNDcwMjg4OCwiMCIsIjE4MTMwMzEwNDExNTE3Mzc4NTgiXQ=="
+        }
+      }
+    }
+  }
+}

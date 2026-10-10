@@ -1,0 +1,600 @@
+{
+  "request": "GET /lists/tweets?listId=84839422",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "list": {
+        "tweets_timeline": {
+          "timeline": {
+            "instructions": [
+              {
+                "entries": [
+                  {
+                    "content": {
+                      "__typename": "TimelineTimelineItem",
+                      "clientEventInfo": {
+                        "component": "suggest_organic_list_tweet",
+                        "details": {
+                          "timelinesDetails": {
+                            "injectionType": "OrganicListTweet"
+                          }
+                        },
+                        "element": "tweet"
+                      },
+                      "entryType": "TimelineTimelineItem",
+                      "itemContent": {
+                        "__typename": "TimelineTweet",
+                        "itemType": "TimelineTweet",
+                        "tweetDisplayType": "Tweet",
+                        "tweet_results": {
+                          "result": {
+                            "__typename": "Tweet",
+                            "core": {
+                              "user_results": {
+                                "result": {
+                                  "__typename": "User",
+                                  "affiliates_highlighted_label": {
+                                    "label": {
+                                      "badge": {
+                                        "url": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                                      },
+                                      "description": "Example",
+                                      "url": {
+                                        "url": "https://example.com",
+                                        "urlType": "DeepLink"
+                                      },
+                                      "userLabelDisplayType": "Badge",
+                                      "userLabelType": "BusinessLabel"
+                                    }
+                                  },
+                                  "avatar": {
+                                    "image_url": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                                  },
+                                  "core": {
+                                    "created_at": "Tue May 17 17:54:29 +0000 2011",
+                                    "name": "Example User 1",
+                                    "screen_name": "example_user_1"
+                                  },
+                                  "dm_permissions": {
+                                    "can_dm": false
+                                  },
+                                  "follow_request_sent": false,
+                                  "has_graduated_access": true,
+                                  "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                                  "is_blue_verified": true,
+                                  "legacy": {
+                                    "default_profile": false,
+                                    "default_profile_image": false,
+                                    "description": "Example",
+                                    "entities": {
+                                      "description": {}
+                                    },
+                                    "fast_followers_count": 0,
+                                    "favourites_count": 30446,
+                                    "follow_request_sent": false,
+                                    "followers_count": 13830347,
+                                    "friends_count": 2351,
+                                    "has_custom_timelines": true,
+                                    "is_translator": false,
+                                    "listed_count": 8963,
+                                    "media_count": 6619,
+                                    "needs_phone_verification": false,
+                                    "normal_followers_count": 13830347,
+                                    "notifications": false,
+                                    "pinned_tweet_ids_str": [
+                                      "2092752406081634501"
+                                    ],
+                                    "possibly_sensitive": false,
+                                    "profile_banner_url": "https://pbs.twimg.com/profile_banners/1000000000000000000/1700000000",
+                                    "profile_interstitial_type": "",
+                                    "statuses_count": 33558,
+                                    "time_zone": "",
+                                    "translator_type": "none",
+                                    "url": "",
+                                    "utc_offset": 0,
+                                    "want_retweets": false,
+                                    "withheld_description": "",
+                                    "withheld_scope": ""
+                                  },
+                                  "location": {
+                                    "location": ""
+                                  },
+                                  "media_permissions": {
+                                    "can_media_tag": true
+                                  },
+                                  "parody_commentary_fan_label": "None",
+                                  "privacy": {
+                                    "protected": false
+                                  },
+                                  "professional": {
+                                    "category": [
+                                      {
+                                        "icon_name": "IconBriefcaseStroke",
+                                        "id": 920,
+                                        "name": "Other"
+                                      }
+                                    ],
+                                    "rest_id": "1446304510134169604"
+                                  },
+                                  "profile_bio": {
+                                    "description": "Example"
+                                  },
+                                  "profile_description_language": "en",
+                                  "profile_image_shape": "Square",
+                                  "relationship_perspectives": {
+                                    "blocked_by": false,
+                                    "blocking": false,
+                                    "followed_by": false,
+                                    "following": false,
+                                    "muting": false
+                                  },
+                                  "rest_id": "1000000000000000001",
+                                  "super_follow_eligible": false,
+                                  "super_followed_by": false,
+                                  "super_following": false,
+                                  "tipjar_settings": {},
+                                  "verification": {
+                                    "verified": false,
+                                    "verified_type": "Business"
+                                  }
+                                }
+                              }
+                            },
+                            "edit_control": {
+                              "edit_control_initial": {
+                                "edit_tweet_ids": [
+                                  "2108944664455676146",
+                                  "2000000000000000001"
+                                ],
+                                "editable_until_msecs": "1791650164000",
+                                "edits_remaining": "4",
+                                "is_edit_eligible": true
+                              },
+                              "initial_tweet_id": "2108944664455676146"
+                            },
+                            "grok_analysis_button": true,
+                            "is_translatable": false,
+                            "legacy": {
+                              "bookmark_count": 1,
+                              "bookmarked": false,
+                              "conversation_id_str": "2000000000000000001",
+                              "created_at": "Sat Oct 10 15:36:16 +0000 2026",
+                              "display_text_range": [
+                                0,
+                                55
+                              ],
+                              "entities": {
+                                "media": [
+                                  {
+                                    "display_url": "example.com",
+                                    "expanded_url": "https://example.com",
+                                    "ext_media_availability": {
+                                      "status": "Available"
+                                    },
+                                    "features": {
+                                      "all": {
+                                        "tags": [
+                                          {
+                                            "name": "Example User 2",
+                                            "screen_name": "example_user_2",
+                                            "type": "user",
+                                            "user_id": "1000000000000000002"
+                                          }
+                                        ]
+                                      },
+                                      "large": {
+                                        "faces": [
+                                          {
+                                            "h": 47,
+                                            "w": 47,
+                                            "x": 372,
+                                            "y": 1040
+                                          },
+                                          {
+                                            "h": 76,
+                                            "w": 76,
+                                            "x": 376,
+                                            "y": 1078
+                                          },
+                                          {
+                                            "h": 260,
+                                            "w": 260,
+                                            "x": 377,
+                                            "y": 74
+                                          }
+                                        ]
+                                      },
+                                      "medium": {
+                                        "faces": [
+                                          {
+                                            "h": 45,
+                                            "w": 45,
+                                            "x": 363,
+                                            "y": 1016
+                                          },
+                                          {
+                                            "h": 74,
+                                            "w": 74,
+                                            "x": 367,
+                                            "y": 1053
+                                          },
+                                          {
+                                            "h": 254,
+                                            "w": 254,
+                                            "x": 368,
+                                            "y": 72
+                                          }
+                                        ]
+                                      },
+                                      "orig": {
+                                        "faces": [
+                                          {
+                                            "h": 47,
+                                            "w": 47,
+                                            "x": 372,
+                                            "y": 1040
+                                          },
+                                          {
+                                            "h": 76,
+                                            "w": 76,
+                                            "x": 376,
+                                            "y": 1078
+                                          },
+                                          {
+                                            "h": 260,
+                                            "w": 260,
+                                            "x": 377,
+                                            "y": 74
+                                          }
+                                        ]
+                                      },
+                                      "small": {
+                                        "faces": [
+                                          {
+                                            "h": 26,
+                                            "w": 26,
+                                            "x": 206,
+                                            "y": 576
+                                          },
+                                          {
+                                            "h": 42,
+                                            "w": 42,
+                                            "x": 208,
+                                            "y": 597
+                                          },
+                                          {
+                                            "h": 144,
+                                            "w": 144,
+                                            "x": 208,
+                                            "y": 40
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "id_str": "2108944661494566912",
+                                    "indices": [
+                                      56,
+                                      79
+                                    ],
+                                    "media_key": "3_2108944661494566912",
+                                    "media_results": {
+                                      "result": {
+                                        "media_key": "3_2108944661494566912"
+                                      }
+                                    },
+                                    "media_url_https": "https://pbs.twimg.com/media/EXAMPLE.jpg",
+                                    "original_info": {
+                                      "focus_rects": [
+                                        {
+                                          "h": 550,
+                                          "w": 982,
+                                          "x": 0,
+                                          "y": 0
+                                        },
+                                        {
+                                          "h": 982,
+                                          "w": 982,
+                                          "x": 0,
+                                          "y": 0
+                                        },
+                                        {
+                                          "h": 1119,
+                                          "w": 982,
+                                          "x": 0,
+                                          "y": 0
+                                        },
+                                        {
+                                          "h": 1228,
+                                          "w": 614,
+                                          "x": 214,
+                                          "y": 0
+                                        },
+                                        {
+                                          "h": 1228,
+                                          "w": 982,
+                                          "x": 0,
+                                          "y": 0
+                                        }
+                                      ],
+                                      "height": 1228,
+                                      "width": 982
+                                    },
+                                    "sizes": {
+                                      "large": {
+                                        "h": 1228,
+                                        "resize": "fit",
+                                        "w": 982
+                                      },
+                                      "medium": {
+                                        "h": 1200,
+                                        "resize": "fit",
+                                        "w": 960
+                                      },
+                                      "small": {
+                                        "h": 680,
+                                        "resize": "fit",
+                                        "w": 544
+                                      },
+                                      "thumb": {
+                                        "h": 150,
+                                        "resize": "crop",
+                                        "w": 150
+                                      }
+                                    },
+                                    "type": "photo",
+                                    "url": "https://t.co/example"
+                                  }
+                                ]
+                              },
+                              "extended_entities": {
+                                "media": [
+                                  {
+                                    "display_url": "example.com",
+                                    "expanded_url": "https://example.com",
+                                    "ext_media_availability": {
+                                      "status": "Available"
+                                    },
+                                    "features": {
+                                      "all": {
+                                        "tags": [
+                                          {
+                                            "name": "Example User 2",
+                                            "screen_name": "example_user_2",
+                                            "type": "user",
+                                            "user_id": "1000000000000000002"
+                                          }
+                                        ]
+                                      },
+                                      "large": {
+                                        "faces": [
+                                          {
+                                            "h": 47,
+                                            "w": 47,
+                                            "x": 372,
+                                            "y": 1040
+                                          },
+                                          {
+                                            "h": 76,
+                                            "w": 76,
+                                            "x": 376,
+                                            "y": 1078
+                                          },
+                                          {
+                                            "h": 260,
+                                            "w": 260,
+                                            "x": 377,
+                                            "y": 74
+                                          }
+                                        ]
+                                      },
+                                      "medium": {
+                                        "faces": [
+                                          {
+                                            "h": 45,
+                                            "w": 45,
+                                            "x": 363,
+                                            "y": 1016
+                                          },
+                                          {
+                                            "h": 74,
+                                            "w": 74,
+                                            "x": 367,
+                                            "y": 1053
+                                          },
+                                          {
+                                            "h": 254,
+                                            "w": 254,
+                                            "x": 368,
+                                            "y": 72
+                                          }
+                                        ]
+                                      },
+                                      "orig": {
+                                        "faces": [
+                                          {
+                                            "h": 47,
+                                            "w": 47,
+                                            "x": 372,
+                                            "y": 1040
+                                          },
+                                          {
+                                            "h": 76,
+                                            "w": 76,
+                                            "x": 376,
+                                            "y": 1078
+                                          },
+                                          {
+                                            "h": 260,
+                                            "w": 260,
+                                            "x": 377,
+                                            "y": 74
+                                          }
+                                        ]
+                                      },
+                                      "small": {
+                                        "faces": [
+                                          {
+                                            "h": 26,
+                                            "w": 26,
+                                            "x": 206,
+                                            "y": 576
+                                          },
+                                          {
+                                            "h": 42,
+                                            "w": 42,
+                                            "x": 208,
+                                            "y": 597
+                                          },
+                                          {
+                                            "h": 144,
+                                            "w": 144,
+                                            "x": 208,
+                                            "y": 40
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "id_str": "2108944661494566912",
+                                    "indices": [
+                                      56,
+                                      79
+                                    ],
+                                    "media_key": "3_2108944661494566912",
+                                    "media_results": {
+                                      "result": {
+                                        "media_key": "3_2108944661494566912"
+                                      }
+                                    },
+                                    "media_url_https": "https://pbs.twimg.com/media/EXAMPLE.jpg",
+                                    "original_info": {
+                                      "focus_rects": [
+                                        {
+                                          "h": 550,
+                                          "w": 982,
+                                          "x": 0,
+                                          "y": 0
+                                        },
+                                        {
+                                          "h": 982,
+                                          "w": 982,
+                                          "x": 0,
+                                          "y": 0
+                                        },
+                                        {
+                                          "h": 1119,
+                                          "w": 982,
+                                          "x": 0,
+                                          "y": 0
+                                        },
+                                        {
+                                          "h": 1228,
+                                          "w": 614,
+                                          "x": 214,
+                                          "y": 0
+                                        },
+                                        {
+                                          "h": 1228,
+                                          "w": 982,
+                                          "x": 0,
+                                          "y": 0
+                                        }
+                                      ],
+                                      "height": 1228,
+                                      "width": 982
+                                    },
+                                    "sizes": {
+                                      "large": {
+                                        "h": 1228,
+                                        "resize": "fit",
+                                        "w": 982
+                                      },
+                                      "medium": {
+                                        "h": 1200,
+                                        "resize": "fit",
+                                        "w": 960
+                                      },
+                                      "small": {
+                                        "h": 680,
+                                        "resize": "fit",
+                                        "w": 544
+                                      },
+                                      "thumb": {
+                                        "h": 150,
+                                        "resize": "crop",
+                                        "w": 150
+                                      }
+                                    },
+                                    "type": "photo",
+                                    "url": "https://t.co/example"
+                                  }
+                                ]
+                              },
+                              "favorite_count": 22,
+                              "favorited": false,
+                              "full_text": "Example text.",
+                              "id_str": "2000000000000000001",
+                              "is_quote_status": false,
+                              "lang": "en",
+                              "possibly_sensitive": false,
+                              "possibly_sensitive_editable": true,
+                              "quote_count": 1,
+                              "reply_count": 4,
+                              "retweet_count": 6,
+                              "retweeted": false,
+                              "user_id_str": "1000000000000000001"
+                            },
+                            "previous_counts": {
+                              "bookmark_count": 0,
+                              "favorite_count": 0,
+                              "quote_count": 0,
+                              "reply_count": 0,
+                              "retweet_count": 0
+                            },
+                            "rest_id": "2000000000000000001",
+                            "unmention_data": {},
+                            "views": {
+                              "count": "7500",
+                              "state": "EnabledWithCount"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "entryId": "tweet-2000000000000000001",
+                    "sortIndex": "2109016349601693694"
+                  },
+                  {
+                    "content": {
+                      "__typename": "TimelineTimelineCursor",
+                      "cursorType": "Top",
+                      "entryType": "TimelineTimelineCursor",
+                      "value": "DAABCgABHUS7MieAJxEKAAIdRI-M3ZvQJQgAAwAAAAEAAA"
+                    },
+                    "entryId": "cursor-top-2109016349601693697",
+                    "sortIndex": "2109016349601693697"
+                  },
+                  {
+                    "content": {
+                      "__typename": "TimelineTimelineCursor",
+                      "cursorType": "Bottom",
+                      "entryType": "TimelineTimelineCursor",
+                      "value": "DAABCgABHUS7Mid__58KAAIdQPHo7lqQcQgAAwAAAAIAAA"
+                    },
+                    "entryId": "cursor-bottom-2109016349601693601",
+                    "sortIndex": "2109016349601693601"
+                  }
+                ],
+                "type": "TimelineAddEntries"
+              }
+            ],
+            "metadata": {
+              "scribeConfig": {
+                "page": "list_tweets"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

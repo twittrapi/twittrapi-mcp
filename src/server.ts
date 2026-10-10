@@ -66,6 +66,8 @@ export async function runEndpoint(
       paginated: def.paginated,
       // Cursors come from the raw response so a simplifier cannot drop them by accident.
       cursorSource: res.data,
+      // A next cursor equal to the one just used means X has nothing more.
+      requestCursor: typeof apiArgs.cursor === "string" ? apiArgs.cursor : undefined,
     });
     return { content: [{ type: "text", text }] };
   } catch (err) {

@@ -1,0 +1,261 @@
+{
+  "request": "GET /user/2244994945/verifiedFollowers",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "user": {
+        "result": {
+          "__typename": "User",
+          "timeline": {
+            "timeline": {
+              "instructions": [
+                {
+                  "type": "TimelineClearCache"
+                },
+                {
+                  "direction": "Top",
+                  "type": "TimelineTerminateTimeline"
+                },
+                {
+                  "direction": "Bottom",
+                  "type": "TimelineTerminateTimeline"
+                },
+                {
+                  "entries": [
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineItem",
+                        "clientEventInfo": {
+                          "component": "BlueVerifiedFollowersSgs",
+                          "element": "user"
+                        },
+                        "entryType": "TimelineTimelineItem",
+                        "itemContent": {
+                          "__typename": "TimelineUser",
+                          "itemType": "TimelineUser",
+                          "userDisplayType": "User",
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "affiliates_highlighted_label": {},
+                              "avatar": {
+                                "image_url": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                              },
+                              "core": {
+                                "created_at": "Thu Aug 24 11:24:32 +0000 2017",
+                                "name": "Example User 1",
+                                "screen_name": "example_user_1"
+                              },
+                              "dm_permissions": {
+                                "can_dm": false
+                              },
+                              "has_graduated_access": true,
+                              "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                              "is_blue_verified": true,
+                              "legacy": {
+                                "default_profile": true,
+                                "default_profile_image": false,
+                                "description": "",
+                                "entities": {
+                                  "description": {},
+                                  "url": {
+                                    "urls": [
+                                      {
+                                        "display_url": "example.com",
+                                        "expanded_url": "https://example.com",
+                                        "indices": [
+                                          0,
+                                          23
+                                        ],
+                                        "url": "https://t.co/example"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "fast_followers_count": 0,
+                                "favourites_count": 1418,
+                                "follow_request_sent": false,
+                                "followers_count": 56,
+                                "friends_count": 236,
+                                "has_custom_timelines": false,
+                                "is_translator": false,
+                                "listed_count": 0,
+                                "media_count": 0,
+                                "needs_phone_verification": false,
+                                "normal_followers_count": 56,
+                                "notifications": false,
+                                "possibly_sensitive": false,
+                                "profile_banner_url": "https://pbs.twimg.com/profile_banners/1000000000000000000/1700000000",
+                                "profile_interstitial_type": "",
+                                "statuses_count": 12,
+                                "time_zone": "",
+                                "translator_type": "none",
+                                "url": "https://t.co/example",
+                                "utc_offset": 0,
+                                "want_retweets": false,
+                                "withheld_description": "",
+                                "withheld_scope": ""
+                              },
+                              "location": {
+                                "location": ""
+                              },
+                              "media_permissions": {
+                                "can_media_tag": false
+                              },
+                              "parody_commentary_fan_label": "None",
+                              "privacy": {
+                                "protected": false
+                              },
+                              "profile_image_shape": "Circle",
+                              "relationship_perspectives": {
+                                "blocked_by": false,
+                                "blocking": false,
+                                "followed_by": false,
+                                "following": false,
+                                "muting": false
+                              },
+                              "rest_id": "1000000000000000001",
+                              "super_follow_eligible": false,
+                              "super_followed_by": false,
+                              "super_following": false,
+                              "tipjar_settings": {
+                                "is_enabled": false
+                              },
+                              "verification": {
+                                "verified": false
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "entryId": "user-1000000000000000001",
+                      "sortIndex": "2109014682063863805"
+                    },
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineItem",
+                        "clientEventInfo": {
+                          "component": "BlueVerifiedFollowersSgs",
+                          "element": "user"
+                        },
+                        "entryType": "TimelineTimelineItem",
+                        "itemContent": {
+                          "__typename": "TimelineUser",
+                          "itemType": "TimelineUser",
+                          "userDisplayType": "User",
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "affiliates_highlighted_label": {},
+                              "avatar": {
+                                "image_url": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg"
+                              },
+                              "core": {
+                                "created_at": "Tue Jan 03 00:30:05 +0000 2023",
+                                "name": "Example User 2",
+                                "screen_name": "example_user_2"
+                              },
+                              "dm_permissions": {
+                                "can_dm": true
+                              },
+                              "has_graduated_access": true,
+                              "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAy",
+                              "is_blue_verified": true,
+                              "legacy": {
+                                "default_profile": true,
+                                "default_profile_image": false,
+                                "description": "",
+                                "entities": {
+                                  "description": {}
+                                },
+                                "fast_followers_count": 0,
+                                "favourites_count": 555,
+                                "follow_request_sent": false,
+                                "followers_count": 943,
+                                "friends_count": 1876,
+                                "has_custom_timelines": false,
+                                "is_translator": false,
+                                "listed_count": 0,
+                                "media_count": 24,
+                                "needs_phone_verification": false,
+                                "normal_followers_count": 943,
+                                "notifications": false,
+                                "pinned_tweet_ids_str": [
+                                  "2088894717488415189"
+                                ],
+                                "possibly_sensitive": true,
+                                "profile_banner_url": "",
+                                "profile_interstitial_type": "",
+                                "statuses_count": 217,
+                                "time_zone": "",
+                                "translator_type": "none",
+                                "url": "",
+                                "utc_offset": 0,
+                                "want_retweets": false,
+                                "withheld_description": "",
+                                "withheld_scope": ""
+                              },
+                              "location": {
+                                "location": "Example"
+                              },
+                              "media_permissions": {
+                                "can_media_tag": false
+                              },
+                              "parody_commentary_fan_label": "None",
+                              "privacy": {
+                                "protected": true
+                              },
+                              "profile_image_shape": "Circle",
+                              "relationship_perspectives": {
+                                "blocked_by": false,
+                                "blocking": false,
+                                "followed_by": false,
+                                "following": false,
+                                "muting": false
+                              },
+                              "rest_id": "1000000000000000002",
+                              "super_follow_eligible": false,
+                              "super_followed_by": false,
+                              "super_following": false,
+                              "tipjar_settings": {},
+                              "verification": {
+                                "verified": false
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "entryId": "user-1000000000000000002",
+                      "sortIndex": "2109014682063863803"
+                    },
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineCursor",
+                        "cursorType": "Bottom",
+                        "entryType": "TimelineTimelineCursor",
+                        "value": "1000000000000000000|2109014682063863786"
+                      },
+                      "entryId": "cursor-bottom-2109014682063863788",
+                      "sortIndex": "2109014682063863788"
+                    },
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineCursor",
+                        "cursorType": "Top",
+                        "entryType": "TimelineTimelineCursor",
+                        "value": "-1|2109014682063863809"
+                      },
+                      "entryId": "cursor-top-2109014682063863809",
+                      "sortIndex": "2109014682063863809"
+                    }
+                  ],
+                  "type": "TimelineAddEntries"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

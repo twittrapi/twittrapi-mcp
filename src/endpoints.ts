@@ -48,6 +48,7 @@ const numericId = (what: string) =>
 
 const usernameSchema = z
   .string()
+  .trim()
   .min(1)
   .max(16)
   .describe("X handle without the URL, e.g. \"elonmusk\" (a leading @ is fine).");
@@ -98,8 +99,9 @@ function requireUserTarget(args: Record<string, unknown>): Record<string, unknow
     const { username: _ignored, ...rest } = args;
     return rest;
   }
-  if (typeof args.username === "string" && args.username.trim()) {
-    return { ...args, userId: "-1", username: args.username.trim().replace(/^@/, "") };
+  const username = typeof args.username === "string" ? args.username.trim().replace(/^@/, "").trim() : "";
+  if (username) {
+    return { ...args, userId: "-1", username };
   }
   throw new Error("Provide either userId or username.");
 }

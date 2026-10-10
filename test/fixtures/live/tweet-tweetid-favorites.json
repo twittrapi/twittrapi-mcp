@@ -1,0 +1,18 @@
+{
+  "request": "GET /tweet/2019881223666233717/favorites",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "favoriters_timeline": {
+        "timeline": {
+          "instructions": [
+            {
+              "direction": "Bottom",
+              "type": "TimelineTerminateTimeline"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

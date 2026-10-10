@@ -1,0 +1,194 @@
+{
+  "request": "GET /communities/1762494276565426592/tweets",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "communityResults": {
+        "result": {
+          "__typename": "Community",
+          "ranked_community_timeline": {
+            "timeline": {
+              "instructions": [
+                {
+                  "type": "TimelineClearCache"
+                },
+                {
+                  "entries": [
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineItem",
+                        "clientEventInfo": {
+                          "component": "suggest_community_tweet",
+                          "details": {
+                            "timelinesDetails": {
+                              "injectionType": "CommunityTweet"
+                            }
+                          },
+                          "element": "tweet"
+                        },
+                        "entryType": "TimelineTimelineItem",
+                        "itemContent": {
+                          "__typename": "TimelineTweet",
+                          "itemType": "TimelineTweet",
+                          "tweetDisplayType": "Tweet",
+                          "tweet_results": {
+                            "result": {
+                              "__typename": "Tweet",
+                              "community_results": {
+                                "result": {
+                                  "__typename": "Community",
+                                  "id_str": "1762494276565426592",
+                                  "viewer_relationship": {
+                                    "moderation_state": {
+                                      "__typename": "CommunityUserDefaultModerationState"
+                                    }
+                                  }
+                                }
+                              },
+                              "core": {
+                                "user_results": {
+                                  "result": {
+                                    "__typename": "User",
+                                    "affiliates_highlighted_label": {},
+                                    "has_graduated_access": true,
+                                    "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                                    "is_blue_verified": true,
+                                    "legacy": {
+                                      "blocked_by": false,
+                                      "blocking": false,
+                                      "can_dm": false,
+                                      "can_media_tag": true,
+                                      "created_at": "Thu Nov 23 00:48:01 +0000 2017",
+                                      "default_profile": true,
+                                      "default_profile_image": false,
+                                      "description": "Example",
+                                      "entities": {
+                                        "description": {}
+                                      },
+                                      "fast_followers_count": 0,
+                                      "favourites_count": 425,
+                                      "follow_request_sent": false,
+                                      "followed_by": false,
+                                      "followers_count": 732,
+                                      "following": false,
+                                      "friends_count": 1918,
+                                      "has_custom_timelines": false,
+                                      "is_translator": false,
+                                      "listed_count": 0,
+                                      "location": "Example",
+                                      "media_count": 261,
+                                      "muting": false,
+                                      "name": "Example User 1",
+                                      "needs_phone_verification": false,
+                                      "normal_followers_count": 732,
+                                      "notifications": false,
+                                      "pinned_tweet_ids_str": [
+                                        "2105743229832528175"
+                                      ],
+                                      "possibly_sensitive": false,
+                                      "profile_banner_url": "https://pbs.twimg.com/profile_banners/1000000000000000000/1700000000",
+                                      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg",
+                                      "profile_interstitial_type": "",
+                                      "protected": false,
+                                      "screen_name": "example_user_1",
+                                      "statuses_count": 577,
+                                      "time_zone": "",
+                                      "translator_type": "none",
+                                      "url": "",
+                                      "utc_offset": 0,
+                                      "verified": false,
+                                      "want_retweets": false,
+                                      "withheld_description": "",
+                                      "withheld_scope": ""
+                                    },
+                                    "parody_commentary_fan_label": "None",
+                                    "profile_image_shape": "Circle",
+                                    "rest_id": "1000000000000000001",
+                                    "super_follow_eligible": false,
+                                    "super_followed_by": false,
+                                    "super_following": false,
+                                    "tipjar_settings": {}
+                                  }
+                                }
+                              },
+                              "edit_control": {
+                                "edit_tweet_ids": [
+                                  "2000000000000000001"
+                                ],
+                                "editable_until_msecs": "1791657033000",
+                                "edits_remaining": "5",
+                                "is_edit_eligible": false
+                              },
+                              "grok_analysis_button": true,
+                              "is_translatable": false,
+                              "legacy": {
+                                "bookmark_count": 0,
+                                "bookmarked": false,
+                                "conversation_id_str": "2000000000000000001",
+                                "created_at": "Sat Oct 10 17:30:33 +0000 2026",
+                                "display_text_range": [
+                                  0,
+                                  229
+                                ],
+                                "entities": {},
+                                "favorite_count": 1,
+                                "favorited": false,
+                                "full_text": "Example text.",
+                                "id_str": "2000000000000000001",
+                                "is_quote_status": false,
+                                "lang": "en",
+                                "quote_count": 0,
+                                "reply_count": 1,
+                                "retweet_count": 0,
+                                "retweeted": false,
+                                "user_id_str": "1000000000000000001"
+                              },
+                              "rest_id": "2000000000000000001",
+                              "unmention_data": {},
+                              "views": {
+                                "count": "66",
+                                "state": "EnabledWithCount"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "entryId": "tweet-2000000000000000001",
+                      "sortIndex": "2109014787424780286"
+                    },
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineCursor",
+                        "cursorType": "Top",
+                        "entryType": "TimelineTimelineCursor",
+                        "value": "DAAJAAA"
+                      },
+                      "entryId": "cursor-top-2109014787424780289",
+                      "sortIndex": "2109014787424780289"
+                    },
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineCursor",
+                        "cursorType": "Bottom",
+                        "entryType": "TimelineTimelineCursor",
+                        "value": "DAAFCgABHUS5xm5__-oLAAIAAADwRW1QQzZ3QUFBZlEvZ0dKTjB2R3AvQUFBQUJRZFExYXloNWJ3Y3gxQ0Y2MGtHbEJ5SFVNNVVEbFdvTmNkUWFwdWpWdkJVeDFFVHd1N0d0QUhIVUg1blJFWGtIc2RRZm1RZXBxQmh4MUVxcm9QbTlBNUhVU1VNMUVhNEdvZFFON1dsRnNoTkIxQ0o1cjJGckVySFVOMVlwSGJzUVlkUTN2Ym14WXhzUjFCRUlBZzJrR2VIVU1ueVZOV0VYc2RRTkxYaGRvUUJSMUF5a2s4MjFBS0hVQ2puekhXb1dnZFFNNGxwTnRBNmgxRUl3U0IyeUhmCAADAAAAAgAA"
+                      },
+                      "entryId": "cursor-bottom-2109014787424780268",
+                      "sortIndex": "2109014787424780268"
+                    }
+                  ],
+                  "type": "TimelineAddEntries"
+                }
+              ],
+              "metadata": {
+                "scribeConfig": {
+                  "page": "top"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

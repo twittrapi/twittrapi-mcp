@@ -1,0 +1,214 @@
+{
+  "request": "GET /user/2244994945/followers",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "user": {
+        "result": {
+          "__typename": "User",
+          "timeline": {
+            "timeline": {
+              "instructions": [
+                {
+                  "type": "TimelineClearCache"
+                },
+                {
+                  "direction": "Top",
+                  "type": "TimelineTerminateTimeline"
+                },
+                {
+                  "direction": "Bottom",
+                  "type": "TimelineTerminateTimeline"
+                },
+                {
+                  "entries": [
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineItem",
+                        "clientEventInfo": {
+                          "component": "FollowersSgs",
+                          "element": "user"
+                        },
+                        "entryType": "TimelineTimelineItem",
+                        "itemContent": {
+                          "__typename": "TimelineUser",
+                          "itemType": "TimelineUser",
+                          "userDisplayType": "User",
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "affiliates_highlighted_label": {},
+                              "has_graduated_access": true,
+                              "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                              "is_blue_verified": true,
+                              "legacy": {
+                                "blocked_by": false,
+                                "blocking": false,
+                                "can_dm": false,
+                                "can_media_tag": true,
+                                "created_at": "Mon Jan 10 02:06:34 +0000 2011",
+                                "default_profile": false,
+                                "default_profile_image": false,
+                                "description": "Example",
+                                "entities": {
+                                  "description": {}
+                                },
+                                "fast_followers_count": 0,
+                                "favourites_count": 15964,
+                                "follow_request_sent": false,
+                                "followed_by": false,
+                                "followers_count": 129088,
+                                "following": false,
+                                "friends_count": 3807,
+                                "has_custom_timelines": true,
+                                "is_translator": false,
+                                "listed_count": 890,
+                                "location": "",
+                                "media_count": 1217,
+                                "muting": false,
+                                "name": "Example User 1",
+                                "needs_phone_verification": false,
+                                "normal_followers_count": 129088,
+                                "notifications": false,
+                                "possibly_sensitive": false,
+                                "profile_banner_url": "https://pbs.twimg.com/profile_banners/1000000000000000000/1700000000",
+                                "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg",
+                                "profile_interstitial_type": "",
+                                "protected": false,
+                                "screen_name": "example_user_1",
+                                "statuses_count": 11761,
+                                "time_zone": "",
+                                "translator_type": "regular",
+                                "url": "",
+                                "utc_offset": 0,
+                                "verified": false,
+                                "want_retweets": false,
+                                "withheld_description": "",
+                                "withheld_scope": ""
+                              },
+                              "parody_commentary_fan_label": "None",
+                              "profile_image_shape": "Circle",
+                              "rest_id": "1000000000000000001",
+                              "super_follow_eligible": false,
+                              "super_followed_by": false,
+                              "super_following": false,
+                              "tipjar_settings": {
+                                "is_enabled": true,
+                                "venmo_handle": "lesliebe"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "entryId": "user-1000000000000000001",
+                      "sortIndex": "2109014666083565568"
+                    },
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineItem",
+                        "clientEventInfo": {
+                          "component": "FollowersSgs",
+                          "element": "user"
+                        },
+                        "entryType": "TimelineTimelineItem",
+                        "itemContent": {
+                          "__typename": "TimelineUser",
+                          "itemType": "TimelineUser",
+                          "userDisplayType": "User",
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "affiliates_highlighted_label": {},
+                              "has_graduated_access": true,
+                              "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAy",
+                              "is_blue_verified": false,
+                              "legacy": {
+                                "blocked_by": false,
+                                "blocking": false,
+                                "can_dm": true,
+                                "can_media_tag": false,
+                                "created_at": "Fri Aug 08 02:16:23 +0000 2008",
+                                "default_profile": false,
+                                "default_profile_image": false,
+                                "description": "Example",
+                                "entities": {
+                                  "description": {}
+                                },
+                                "fast_followers_count": 0,
+                                "favourites_count": 21556,
+                                "follow_request_sent": false,
+                                "followed_by": false,
+                                "followers_count": 7599,
+                                "following": false,
+                                "friends_count": 2712,
+                                "has_custom_timelines": true,
+                                "is_translator": false,
+                                "listed_count": 158,
+                                "location": "Example",
+                                "media_count": 682,
+                                "muting": false,
+                                "name": "Example User 2",
+                                "needs_phone_verification": false,
+                                "normal_followers_count": 7599,
+                                "notifications": false,
+                                "possibly_sensitive": false,
+                                "profile_banner_url": "https://pbs.twimg.com/profile_banners/1000000000000000000/1700000000",
+                                "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg",
+                                "profile_interstitial_type": "",
+                                "protected": false,
+                                "screen_name": "example_user_2",
+                                "statuses_count": 7955,
+                                "time_zone": "",
+                                "translator_type": "none",
+                                "url": "",
+                                "utc_offset": 0,
+                                "verified": false,
+                                "want_retweets": false,
+                                "withheld_description": "",
+                                "withheld_scope": ""
+                              },
+                              "parody_commentary_fan_label": "None",
+                              "profile_image_shape": "Circle",
+                              "rest_id": "1000000000000000002",
+                              "super_follow_eligible": false,
+                              "super_followed_by": false,
+                              "super_following": false,
+                              "tipjar_settings": {}
+                            }
+                          }
+                        }
+                      },
+                      "entryId": "user-1000000000000000002",
+                      "sortIndex": "2109014666083565565"
+                    },
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineCursor",
+                        "cursorType": "Bottom",
+                        "entryType": "TimelineTimelineCursor",
+                        "value": "1000000000000000000|2109014666083565496"
+                      },
+                      "entryId": "cursor-bottom-2109014666083565498",
+                      "sortIndex": "2109014666083565498"
+                    },
+                    {
+                      "content": {
+                        "__typename": "TimelineTimelineCursor",
+                        "cursorType": "Top",
+                        "entryType": "TimelineTimelineCursor",
+                        "value": "-1|2109014666083565569"
+                      },
+                      "entryId": "cursor-top-2109014666083565569",
+                      "sortIndex": "2109014666083565569"
+                    }
+                  ],
+                  "type": "TimelineAddEntries"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

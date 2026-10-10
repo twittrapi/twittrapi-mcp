@@ -1,0 +1,74 @@
+{
+  "request": "GET /communities/1762494276565426592/moderators",
+  "capturedAt": "2026-10-10",
+  "response": {
+    "data": {
+      "communityResults": {
+        "id": "Q29tbXVuaXR5UmVzdWx0czoxNzYyNDk0Mjc2NTY1NDI2NTky",
+        "result": {
+          "__typename": "Community",
+          "id": "Q29tbXVuaXR5OjE3NjI0OTQyNzY1NjU0MjY1OTI=",
+          "moderators_slice": {
+            "items_results": [
+              {
+                "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwMQ==",
+                "result": {
+                  "__typename": "User",
+                  "affiliates_highlighted_label": {},
+                  "community_role": "Admin",
+                  "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAx",
+                  "identity_profile_labels_highlighted_label": {},
+                  "is_blue_verified": true,
+                  "legacy": {
+                    "blocking": false,
+                    "follow_request_sent": false,
+                    "followed_by": false,
+                    "following": false,
+                    "id_str": "1000000000000000001",
+                    "name": "Example User 1",
+                    "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg",
+                    "protected": false,
+                    "screen_name": "example_user_1",
+                    "verified": false
+                  },
+                  "rest_id": "1000000000000000001",
+                  "super_follow_eligible": false,
+                  "super_followed_by": false,
+                  "super_following": false
+                }
+              },
+              {
+                "id": "VXNlclJlc3VsdHM6MTAwMDAwMDAwMDAwMDAwMDAwMg==",
+                "result": {
+                  "__typename": "User",
+                  "affiliates_highlighted_label": {},
+                  "community_role": "Moderator",
+                  "id": "VXNlcjoxMDAwMDAwMDAwMDAwMDAwMDAy",
+                  "identity_profile_labels_highlighted_label": {},
+                  "is_blue_verified": false,
+                  "legacy": {
+                    "blocking": false,
+                    "follow_request_sent": false,
+                    "followed_by": false,
+                    "following": false,
+                    "id_str": "1000000000000000002",
+                    "name": "Example User 2",
+                    "profile_image_url_https": "https://pbs.twimg.com/profile_images/1000000000000000000/example_normal.jpg",
+                    "protected": false,
+                    "screen_name": "example_user_2",
+                    "verified": false
+                  },
+                  "rest_id": "1000000000000000002",
+                  "super_follow_eligible": false,
+                  "super_followed_by": false,
+                  "super_following": false
+                }
+              }
+            ],
+            "slice_info": {}
+          }
+        }
+      }
+    }
+  }
+}
