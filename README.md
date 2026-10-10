@@ -1,8 +1,12 @@
-# twittrapi-mcp
+# twittrapi-mcp – Twitter/X MCP server for Claude, Cursor and other AI agents
+
+[![npm](https://img.shields.io/npm/v/twittrapi-mcp.svg)](https://www.npmjs.com/package/twittrapi-mcp)
 
 An [MCP](https://modelcontextprotocol.io) server for [TwittrAPI](https://twittrapi.com), a read-only
 Twitter/X data API. It lets Claude, Cursor and other MCP clients look up profiles, tweets,
 followers, search results, lists, communities and trends.
+
+> **Get an API key:** [twittrapi.com/start](https://twittrapi.com/start?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Pricing](https://twittrapi.com/pricing?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Docs](https://twittrapi.com/docs?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · also available on [RapidAPI](https://rapidapi.com/viperscores-viperscores-default/api/twitter-aio)
 
 Not affiliated with X Corp.
 
@@ -186,6 +190,10 @@ Try the server interactively with the MCP Inspector:
 ```sh
 npx @modelcontextprotocol/inspector -e TWITTRAPI_API_KEY=your-key node dist/index.js
 ```
+
+## Support
+
+Questions, bugs or a higher rate limit: email support@twittrapi.com or open an issue in this repository. Service status: [status.twittrapi.com](https://status.twittrapi.com). News and changes: the TwittrAPI Telegram channel (link on the website).
 
 ## License
 
