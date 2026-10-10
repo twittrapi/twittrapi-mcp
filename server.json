@@ -1,0 +1,44 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.twittrapi/twittrapi-mcp",
+  "title": "TwittrAPI",
+  "description": "Read X (Twitter) data: profiles, tweets, followers, search, lists, communities and trends.",
+  "repository": {
+    "url": "https://github.com/twittrapi/twittrapi-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://twittrapi.com",
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "twittrapi-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "TWITTRAPI_API_KEY",
+          "description": "Your TwittrAPI key. Set this or RAPIDAPI_KEY.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "RAPIDAPI_KEY",
+          "description": "RapidAPI key for the Twitter AIO API. Used when TWITTRAPI_API_KEY is not set.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "TWITTRAPI_BASE_URL",
+          "description": "Override the API base URL.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "https://api.twittrapi.com"
+        }
+      ]
+    }
+  ]
+}

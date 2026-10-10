@@ -1,0 +1,51 @@
+{
+  "name": "twittrapi-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for the TwittrAPI Twitter/X data API: profiles, tweets, followers, search, lists, communities and trends.",
+  "license": "MIT",
+  "author": "TwittrAPI",
+  "mcpName": "io.github.twittrapi/twittrapi-mcp",
+  "type": "module",
+  "bin": {
+    "twittrapi-mcp": "dist/index.js"
+  },
+  "main": "dist/server.js",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twittrapi/twittrapi-mcp.git"
+  },
+  "homepage": "https://twittrapi.com",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "twitter",
+    "x",
+    "twitter-api",
+    "tweets",
+    "claude"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
+    "test": "npm run build && vitest run",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.4",
+    "typescript": "6.0.3",
+    "vitest": "5.0.1"
+  }
+}
