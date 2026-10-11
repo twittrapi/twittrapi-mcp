@@ -7,6 +7,21 @@ export interface Cursors {
   previous?: string;
 }
 
+/** A simple-format page: { data: [...], nextCursor, previousCursor, hasNextPage }. */
+export interface SimplePage {
+  data: unknown[];
+  nextCursor: string | null;
+  previousCursor: string | null;
+  hasNextPage: boolean;
+}
+
+/** True for a simple-format page. Raw X JSON never has hasNextPage/nextCursor at the top level. */
+export function isSimplePage(data: unknown): data is SimplePage {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  const o = data as Record<string, unknown>;
+  return typeof o.hasNextPage === "boolean" && "nextCursor" in o && Array.isArray(o.data);
+}
+
 /**
  * Finds pagination cursors in X's GraphQL JSON. X puts them in timeline entries shaped like
  * { entryId: "cursor-bottom-...", content: { cursorType: "Bottom" | "Top", value: "..." } }
@@ -107,11 +122,19 @@ export function countItems(data: unknown): { items: number; cursors: number; lis
 }
 
 /**
- * The next-page cursor to report, or undefined when this is the last page: no Bottom cursor or
+ * The next-page cursor to report, or undefined when this is the last page. Simple-format pages use
+ * nextCursor / hasNextPage. Raw pages: no Bottom cursor or
  * next_cursor, the same cursor that was used for this request, or a page that has entry lists
  * but no results (X keeps returning a cursor at the end of a timeline).
  */
 export function nextPageCursor(data: unknown, requestCursor?: string): string | undefined {
+  if (isSimplePage(data)) {
+    // Simple format: the API already ends pagination (empty page, repeated cursor, end marker).
+    const n = data.nextCursor;
+    if (!data.hasNextPage || typeof n !== "string" || !n) return undefined;
+    if (requestCursor && n === requestCursor) return undefined;
+    return n;
+  }
   const next = extractCursors(data).next;
   if (!next) return undefined;
   if (requestCursor && next === requestCursor) return undefined;

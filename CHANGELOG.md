@@ -6,6 +6,29 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-11
+
+### Breaking
+
+- Tool results now use the API's simple format by default (`format=simple`, see
+  https://twittrapi.com/docs/simple-format): compact camelCase JSON such as
+  `{"data": [...], "nextCursor": ..., "hasNextPage": ...}` instead of X's raw GraphQL JSON, about
+  60 % fewer tokens. Prompts or clients that read raw fields (`legacy.full_text`, `rest_id`,
+  `core.screen_name`, ...) from tool output need `format: "raw"` or `TWITTRAPI_RESPONSE_FORMAT=raw`.
+
+### Added
+
+- `format` argument (`"simple"` or `"raw"`) on every tool, to choose the format per call.
+- `TWITTRAPI_RESPONSE_FORMAT` environment variable (`simple` by default, or `raw`) for the server's
+  default, in stdio and HTTP mode. An invalid value stops the server with an error. Listed in
+  `server.json`.
+- The cursor header reads `nextCursor` / `hasNextPage` from simple-format pages.
+- Tests against simple-format fixtures copied from the API's normalize testdata
+  (`test/fixtures/simple`), including the stdio server in both formats and HTTP mode.
+- Tests against trimmed real API responses (`test/fixtures/live`): every paginated shape,
+  followers (Bottom before Top), tweet detail, the search wrapper, slice `next_cursor`
+  (communities, jobs) and empty likes/favorites timelines.
+
 ### Fixed
 
 - The cursor header reports the last page (`next_cursor: none (last page, no more results)`) when
@@ -16,12 +39,6 @@ All notable changes to this project are listed here. The format follows
 - The Top cursor is no longer printed as `previous_cursor`; it is not a next-page cursor.
 - `username` on user timelines is trimmed before validation, and a bare `@` is rejected instead of
   being sent as an empty handle.
-
-### Added
-
-- Tests against trimmed real API responses (`test/fixtures/live`): every paginated shape,
-  followers (Bottom before Top), tweet detail, the search wrapper, slice `next_cursor`
-  (communities, jobs) and empty likes/favorites timelines.
 
 ## [0.1.0] - 2026-10-10
 

@@ -1,0 +1,19 @@
+{
+  "data": [
+    {
+      "name": "#GoLang",
+      "query": "#GoLang",
+      "url": "http://twitter.com/search?q=%23GoLang",
+      "tweetVolume": null
+    },
+    {
+      "name": "Release Day",
+      "query": "\"Release Day\"",
+      "url": "http://twitter.com/search?q=%22Release+Day%22",
+      "tweetVolume": 15342
+    }
+  ],
+  "nextCursor": null,
+  "previousCursor": null,
+  "hasNextPage": false
+}

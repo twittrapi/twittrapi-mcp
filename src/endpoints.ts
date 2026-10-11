@@ -2,9 +2,10 @@
  * The single source of truth for which tools exist and which TwittrAPI endpoint each one calls.
  * Add, remove or change tools here; server.ts registers whatever is in ENDPOINTS.
  *
- * Every endpoint is a GET that returns X's raw GraphQL JSON. To return a smaller shape for a tool
- * later, set its `simplify` function (see Simplifier). It receives the parsed JSON and its return
- * value is what the model sees. Cursor extraction runs on the raw JSON before simplify.
+ * Every endpoint is a GET. By default the server asks the API for the simple format
+ * (format=simple, compact JSON); the `format` tool argument or TWITTRAPI_RESPONSE_FORMAT=raw gives
+ * X's raw GraphQL JSON instead. A tool can also set a `simplify` function (see Simplifier) to reshape
+ * the parsed JSON further; cursor extraction runs on the API response before simplify.
  */
 import { z } from "zod";
 import type { QueryValue } from "./client.js";

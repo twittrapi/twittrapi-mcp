@@ -7,6 +7,28 @@ export const DEFAULT_TIMEOUT_MS = 60_000;
 
 export type AuthMode = "direct" | "rapidapi";
 
+/**
+ * Response format requested from the API. "simple" (the default) asks for format=simple: compact,
+ * flat JSON with a fixed schema (https://twittrapi.com/docs/simple-format), roughly 60 % fewer tokens.
+ * "raw" returns X's full GraphQL JSON.
+ */
+export type ResponseFormat = "simple" | "raw";
+export const RESPONSE_FORMATS: readonly ResponseFormat[] = ["simple", "raw"];
+export const DEFAULT_FORMAT: ResponseFormat = "simple";
+
+/**
+ * Parses a format setting (TWITTRAPI_RESPONSE_FORMAT). Empty means the default; anything other than
+ * simple or raw (case-insensitive) is an error, so a typo does not silently change the output.
+ */
+export function parseResponseFormat(value: string | undefined, name = "TWITTRAPI_RESPONSE_FORMAT"): ResponseFormat | undefined {
+  const v = value?.trim().toLowerCase();
+  if (!v) return undefined;
+  if (!RESPONSE_FORMATS.includes(v as ResponseFormat)) {
+    throw new Error(`Invalid ${name} value "${value}". Use "simple" (default) or "raw".`);
+  }
+  return v as ResponseFormat;
+}
+
 export interface ClientConfig {
   /** "direct" sends X-API-KEY to the TwittrAPI base URL, "rapidapi" goes through RapidAPI. */
   mode: AuthMode;
@@ -15,6 +37,8 @@ export interface ClientConfig {
   /** Base URL for direct mode. Ignored in RapidAPI mode. */
   baseUrl?: string;
   timeoutMs?: number;
+  /** Default response format for tool results. Undefined means DEFAULT_FORMAT ("simple"). */
+  format?: ResponseFormat;
   /** Injected for tests. Defaults to the global fetch. */
   fetch?: typeof fetch;
 }
@@ -46,14 +70,19 @@ export class TwittrApiError extends Error {
   }
 }
 
-/** Reads auth config from environment variables (stdio mode). */
+/**
+ * Reads auth config and the response format from environment variables (stdio mode). Throws on an
+ * invalid TWITTRAPI_RESPONSE_FORMAT.
+ */
 export function configFromEnv(env: NodeJS.ProcessEnv = process.env): ClientConfig {
   const baseUrl = env.TWITTRAPI_BASE_URL?.trim() || DEFAULT_BASE_URL;
+  const format = parseResponseFormat(env.TWITTRAPI_RESPONSE_FORMAT);
+  const extra = format ? { format } : {};
   const direct = env.TWITTRAPI_API_KEY?.trim();
-  if (direct) return { mode: "direct", apiKey: direct, baseUrl };
+  if (direct) return { mode: "direct", apiKey: direct, baseUrl, ...extra };
   const rapid = env.RAPIDAPI_KEY?.trim();
-  if (rapid) return { mode: "rapidapi", apiKey: rapid };
-  return { mode: "direct", apiKey: undefined, baseUrl };
+  if (rapid) return { mode: "rapidapi", apiKey: rapid, ...extra };
+  return { mode: "direct", apiKey: undefined, baseUrl, ...extra };
 }
 
 /** Joins the base URL, a path and query parameters. Undefined/empty values are dropped. */

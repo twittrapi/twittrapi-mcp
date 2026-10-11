@@ -1,16 +1,34 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { TwittrApiClient, TwittrApiError, type ApiRequest, type QueryValue } from "./client.js";
+import {
+  DEFAULT_FORMAT,
+  RESPONSE_FORMATS,
+  TwittrApiClient,
+  TwittrApiError,
+  type ApiRequest,
+  type QueryValue,
+  type ResponseFormat,
+} from "./client.js";
 import { ENDPOINTS, type EndpointDef } from "./endpoints.js";
 import { DEFAULT_MAX_CHARS, MAX_MAX_CHARS, MIN_MAX_CHARS, formatResult } from "./output.js";
 import { VERSION } from "./version.js";
 
-export const SERVER_INSTRUCTIONS = `Tools for reading public X (Twitter) data through TwittrAPI.
-Responses are X's raw GraphQL JSON and can be large; they are cut at max_chars (default ${DEFAULT_MAX_CHARS}).
+/** Server instructions for the given default response format. */
+export function serverInstructions(format: ResponseFormat = DEFAULT_FORMAT): string {
+  const formatLine =
+    format === "simple"
+      ? `Responses use the compact simple format by default: {"data": ...} with flat camelCase tweets and users (id, text, createdAt, author, counts, media, ...). Pass format "raw" to a tool only if you need fields it leaves out (cards, polls, edit history, community notes).`
+      : `Responses are X's raw GraphQL JSON by default and can be large. Pass format "simple" to a tool for compact, flat JSON with far fewer tokens.`;
+  return `Tools for reading public X (Twitter) data through TwittrAPI.
+${formatLine}
+Output is cut at max_chars (default ${DEFAULT_MAX_CHARS}).
 Most user tools accept userId or username; resolve a handle once with username_to_id and reuse the ID.
 Paginated tools print next_cursor at the top of the result; pass it back as cursor for the next page.
 A 402 error means the account has no balance: stop and tell the user. Every call is billed.`;
+}
+
+export const SERVER_INSTRUCTIONS = serverInstructions(DEFAULT_FORMAT);
 
 const maxCharsSchema = z
   .number()
@@ -22,11 +40,21 @@ const maxCharsSchema = z
     `Maximum characters of JSON to return (default ${DEFAULT_MAX_CHARS}). Longer output is cut with a [TRUNCATED] marker. Lower it to save context, raise it if you need the full response.`,
   );
 
-/** Builds the zod input shape for a tool: its endpoint params plus max_chars. */
-export function inputShape(def: EndpointDef): Record<string, z.ZodType> {
+function formatSchema(defaultFormat: ResponseFormat) {
+  return z
+    .enum(RESPONSE_FORMATS as [ResponseFormat, ...ResponseFormat[]])
+    .optional()
+    .describe(
+      `Response format (default ${defaultFormat}). simple: compact JSON with flat camelCase tweets and users, about 60% fewer tokens. raw: X's full GraphQL JSON, only needed for fields simple leaves out (cards, polls, edit history, community notes).`,
+    );
+}
+
+/** Builds the zod input shape for a tool: its endpoint params plus max_chars and format. */
+export function inputShape(def: EndpointDef, defaultFormat: ResponseFormat = DEFAULT_FORMAT): Record<string, z.ZodType> {
   const shape: Record<string, z.ZodType> = {};
   for (const [name, p] of Object.entries(def.params)) shape[name] = p.schema;
   shape.max_chars = maxCharsSchema;
+  shape.format = formatSchema(defaultFormat);
   return shape;
 }
 
@@ -57,14 +85,17 @@ export async function runEndpoint(
   args: Record<string, unknown>,
 ): Promise<CallToolResult> {
   try {
-    const { max_chars, ...apiArgs } = args;
+    const { max_chars, format, ...apiArgs } = args;
+    const fmt = format === "raw" || format === "simple" ? format : (client.config.format ?? DEFAULT_FORMAT);
     const req = buildRequest(def, apiArgs);
+    if (fmt === "simple") req.query = { ...req.query, format: "simple" };
     const res = await client.get(req);
     const data = def.simplify ? def.simplify(res.data, apiArgs) : res.data;
     const text = formatResult(data, {
       maxChars: typeof max_chars === "number" ? max_chars : DEFAULT_MAX_CHARS,
       paginated: def.paginated,
-      // Cursors come from the raw response so a simplifier cannot drop them by accident.
+      // Cursors come from the API response (raw timeline or simple envelope), so a simplifier
+      // cannot drop them by accident.
       cursorSource: res.data,
       // A next cursor equal to the one just used means X has nothing more.
       requestCursor: typeof apiArgs.cursor === "string" ? apiArgs.cursor : undefined,
@@ -80,7 +111,7 @@ export async function runEndpoint(
 export function createServer(client: TwittrApiClient, endpoints: EndpointDef[] = ENDPOINTS): McpServer {
   const server = new McpServer(
     { name: "twittrapi-mcp", version: VERSION },
-    { instructions: SERVER_INSTRUCTIONS },
+    { instructions: serverInstructions(client.config.format ?? DEFAULT_FORMAT) },
   );
   for (const def of endpoints) {
     server.registerTool(
@@ -88,7 +119,7 @@ export function createServer(client: TwittrApiClient, endpoints: EndpointDef[] =
       {
         title: def.title,
         description: def.description,
-        inputSchema: inputShape(def),
+        inputSchema: inputShape(def, client.config.format ?? DEFAULT_FORMAT),
         annotations: {
           title: def.title,
           readOnlyHint: true,

@@ -1,6 +1,6 @@
 import { createServer as createHttpServer, type IncomingMessage, type Server } from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { DEFAULT_BASE_URL, TwittrApiClient, type ClientConfig } from "./client.js";
+import { DEFAULT_BASE_URL, TwittrApiClient, type ClientConfig, type ResponseFormat } from "./client.js";
 import { createServer } from "./server.js";
 import { VERSION } from "./version.js";
 
@@ -9,6 +9,8 @@ export interface HttpOptions {
   host: string;
   /** Base URL for direct mode, from the server operator's env (never from the request). */
   baseUrl?: string;
+  /** Default response format for tool results, from the operator's env. Callers can override it per tool call. */
+  format?: ResponseFormat;
   /** Injected for tests. */
   fetch?: typeof fetch;
 }
@@ -72,7 +74,7 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
       });
       return;
     }
-    const client = new TwittrApiClient({ ...config, fetch: opts.fetch });
+    const client = new TwittrApiClient({ ...config, format: opts.format, fetch: opts.fetch });
     const server = createServer(client);
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
     res.on("close", () => {

@@ -8,13 +8,13 @@
     "source": "github"
   },
   "websiteUrl": "https://twittrapi.com",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "twittrapi-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "transport": {
         "type": "stdio"
       },
@@ -37,6 +37,14 @@
           "isRequired": false,
           "isSecret": false,
           "default": "https://api.twittrapi.com"
+        },
+        {
+          "name": "TWITTRAPI_RESPONSE_FORMAT",
+          "description": "Format of tool results: simple (compact JSON, far fewer tokens) or raw (X's full GraphQL JSON). Tools also take a format argument.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "simple",
+          "choices": ["simple", "raw"]
         }
       ]
     }

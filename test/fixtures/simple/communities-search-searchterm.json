@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "id": "1762494276565426592",
+      "name": "AI — Rumors & Insights",
+      "description": "",
+      "createdAt": null,
+      "memberCount": 30718,
+      "moderatorCount": 0,
+      "joinPolicy": null,
+      "nsfw": false,
+      "topic": "Artificial Intelligence",
+      "bannerUrl": "https://pbs.twimg.com/community_banner_img/2006436936446029824/n1OK-QV1?format=jpg&name=orig",
+      "creator": null,
+      "rules": []
+    },
+    {
+      "id": "1508750875442954242",
+      "name": "1337: AI, Python, Data",
+      "description": "",
+      "createdAt": null,
+      "memberCount": 41701,
+      "moderatorCount": 0,
+      "joinPolicy": null,
+      "nsfw": false,
+      "topic": "Artificial Intelligence",
+      "bannerUrl": "https://pbs.twimg.com/community_banner_img/2049971879276933120/A_mSn7Qy?format=jpg&name=orig",
+      "creator": null,
+      "rules": []
+    }
+  ],
+  "nextCursor": "WzExMy41ODc5MSwxODk3OTI3NDQxNDQxNTEzNzE4XQ==",
+  "previousCursor": null,
+  "hasNextPage": true
+}

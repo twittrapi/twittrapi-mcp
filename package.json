@@ -1,6 +1,6 @@
 {
   "name": "twittrapi-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for the TwittrAPI Twitter/X data API: profiles, tweets, followers, search, lists, communities and trends.",
   "license": "MIT",
   "author": "TwittrAPI",

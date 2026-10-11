@@ -1,0 +1,55 @@
+{
+  "data": [
+    {
+      "id": "1000000000000000001",
+      "username": "example_user_1",
+      "name": "Example User 1",
+      "description": "Example",
+      "location": "Example",
+      "url": null,
+      "createdAt": "2021-12-25T21:19:29Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1000000000000000000/example.jpg",
+      "bannerUrl": "https://pbs.twimg.com/profile_banners/1000000000000000000/1700000000",
+      "verified": false,
+      "verifiedType": null,
+      "protected": false,
+      "counts": {
+        "followers": 415,
+        "following": 470,
+        "tweets": 1411,
+        "likes": 6190,
+        "media": 102,
+        "listed": 0
+      },
+      "pinnedTweetIds": [],
+      "isAutomated": false
+    },
+    {
+      "id": "1000000000000000002",
+      "username": "example_user_2",
+      "name": "Example User 2",
+      "description": "",
+      "location": "",
+      "url": null,
+      "createdAt": "2026-09-30T22:33:12Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1000000000000000000/example.jpg",
+      "bannerUrl": "https://pbs.twimg.com/profile_banners/1000000000000000000/1700000000",
+      "verified": false,
+      "verifiedType": null,
+      "protected": false,
+      "counts": {
+        "followers": 2,
+        "following": 48,
+        "tweets": 12,
+        "likes": 58,
+        "media": 2,
+        "listed": 0
+      },
+      "pinnedTweetIds": [],
+      "isAutomated": false
+    }
+  ],
+  "nextCursor": "HBaAgIC+kLf1iDQAAA==",
+  "previousCursor": "HCaAgIDOzuXjkTQAAA==",
+  "hasNextPage": true
+}

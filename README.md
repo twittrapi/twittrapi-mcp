@@ -74,6 +74,7 @@ Any client that can start a stdio server works. The command is `npx -y twittrapi
 | `TWITTRAPI_API_KEY` | one of the two keys | Your TwittrAPI key. Sent as the `X-API-KEY` header. |
 | `RAPIDAPI_KEY` | one of the two keys | RapidAPI key. Used only when `TWITTRAPI_API_KEY` is not set. |
 | `TWITTRAPI_BASE_URL` | no | API base URL for the direct API. Default `https://api.twittrapi.com`. |
+| `TWITTRAPI_RESPONSE_FORMAT` | no | `simple` (default) or `raw`. See [Response format](#response-format). |
 
 If neither key is set, the server still starts and lists its tools, but every call returns an
 error explaining how to set a key.
@@ -122,11 +123,25 @@ All tools are read-only.
 The user timeline tools (`get_user_tweets`, `get_followers` and so on) accept either `userId` or
 `username`.
 
+### Response format
+
+Tool results use the API's [simple format](https://twittrapi.com/docs/simple-format) by default:
+flat camelCase JSON with a fixed schema (`{"data": [...], "nextCursor": ..., "hasNextPage": ...}`
+for lists, `{"data": {...}}` for single objects). Tweets carry `id`, `url`, `text`, `createdAt`,
+`author`, `counts`, `media`, `quoted`, `retweetOf` and a few more fields; users carry `username`,
+`name`, `description`, `counts` and so on. That is about 60 % fewer tokens than X's raw GraphQL JSON.
+
+To get the raw JSON instead (for cards, polls, edit history, community notes and other fields the
+simple format leaves out):
+
+- per call: every tool takes an optional `format` argument, `"simple"` or `"raw"`;
+- for the whole server: set `TWITTRAPI_RESPONSE_FORMAT=raw` (the `format` argument still wins).
+
 ### Output size and pagination
 
-Responses are X's raw GraphQL JSON and can be several hundred KB. Every tool takes an optional
-`max_chars` argument (default 50,000, range 1,000 to 1,000,000). Longer output is cut and ends
-with a `[TRUNCATED ...]` marker.
+Raw responses can be several hundred KB. Every tool takes an optional `max_chars` argument
+(default 50,000, range 1,000 to 1,000,000). Longer output is cut and ends with a
+`[TRUNCATED ...]` marker.
 
 Paginated tools print the cursor above the JSON, so truncation never removes it:
 
@@ -137,9 +152,10 @@ Pass next_cursor as `cursor` to get the next page.
 {"data":{...}}
 ```
 
-On the last page the header reads `next_cursor: none (last page, no more results)`. That happens
-when the response has no next cursor (empty likes or likers timelines included), when X returns
-the cursor you just sent, or when a page holds only cursors and no results.
+On the last page the header reads `next_cursor: none (last page, no more results)`. In the simple
+format that is when `hasNextPage` is false. In the raw format it happens when the response has no
+next cursor (empty likes or likers timelines included), when X returns the cursor you just sent, or
+when a page holds only cursors and no results.
 
 ### Errors
 
@@ -165,7 +181,8 @@ caller's key in one of these headers:
 - `X-API-KEY: <key>` or `Authorization: Bearer <key>` for the direct API
 - `x-rapidapi-key: <key>` for RapidAPI
 
-`TWITTRAPI_BASE_URL` is still read from the environment. Put the server behind HTTPS if it is
+`TWITTRAPI_BASE_URL` and `TWITTRAPI_RESPONSE_FORMAT` are still read from the environment; callers
+can pick the format per call with the `format` argument. Put the server behind HTTPS if it is
 reachable from the internet.
 
 Example client config for a hosted instance (Claude Code):
@@ -186,8 +203,8 @@ npm test
 stdio and HTTP against a local mock API.
 
 To add or change a tool, edit `src/endpoints.ts`. Each entry has a name, description, API path and
-zod parameter schemas. An entry can also set a `simplify` function to return a smaller shape than
-the raw GraphQL JSON; none do yet.
+zod parameter schemas. Every tool also gets `max_chars` and `format`. An entry can set a `simplify`
+function to reshape the parsed JSON further; none do.
 
 Try the server interactively with the MCP Inspector:
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { TwittrApiClient, configFromEnv } from "./client.js";
+import { TwittrApiClient, configFromEnv, parseResponseFormat } from "./client.js";
 import { startHttpServer } from "./http.js";
 import { createServer } from "./server.js";
 import { VERSION } from "./version.js";
@@ -17,6 +17,10 @@ Environment (stdio mode):
   TWITTRAPI_API_KEY     Your TwittrAPI key (direct API)
   RAPIDAPI_KEY          Your RapidAPI key, used if TWITTRAPI_API_KEY is not set
   TWITTRAPI_BASE_URL    Override the API base URL (default https://api.twittrapi.com)
+  TWITTRAPI_RESPONSE_FORMAT
+                        simple (default): compact JSON, far fewer tokens.
+                        raw: X's full GraphQL JSON. Tools also take a format argument.
+                        Read in both stdio and HTTP mode.
   PORT, HOST            Defaults for --port and --host in HTTP mode
 `;
 
@@ -71,6 +75,7 @@ async function main(): Promise<void> {
       port: args.port,
       host: args.host,
       baseUrl: process.env.TWITTRAPI_BASE_URL?.trim() || undefined,
+      format: parseResponseFormat(process.env.TWITTRAPI_RESPONSE_FORMAT),
     });
     const addr = server.address();
     const port = typeof addr === "object" && addr ? addr.port : args.port;
