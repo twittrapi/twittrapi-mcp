@@ -2,9 +2,9 @@
 
 [![npm](https://img.shields.io/npm/v/twittrapi-mcp.svg)](https://www.npmjs.com/package/twittrapi-mcp)
 
-An [MCP](https://modelcontextprotocol.io) server for [TwittrAPI](https://twittrapi.com), a read-only
-Twitter/X data API. It lets Claude, Cursor and other MCP clients look up profiles, tweets,
-followers, search results, lists, communities and trends.
+An [MCP](https://modelcontextprotocol.io) server for [TwittrAPI](https://twittrapi.com), a REST API for
+public Twitter/X data: tweets, profiles, followers, search, lists and communities. It lets Claude, Cursor
+and other MCP clients read that data, from $0.065 per 1,000 calls and with no X developer account.
 
 > **Get an API key:** [twittrapi.com/start](https://twittrapi.com/start?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Pricing](https://twittrapi.com/pricing?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Docs](https://twittrapi.com/docs?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · also available on [RapidAPI](https://rapidapi.com/viperscores-viperscores-default/api/twitter-aio)
 

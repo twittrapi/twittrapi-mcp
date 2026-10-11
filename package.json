@@ -1,7 +1,7 @@
 {
   "name": "twittrapi-mcp",
   "version": "0.3.0",
-  "description": "MCP server for the TwittrAPI Twitter/X data API: profiles, tweets, followers, search, lists, communities and trends.",
+  "description": "MCP server for TwittrAPI: read public Twitter/X tweets, profiles, followers and search results. Pay as you go from $0.065 per 1,000 calls.",
   "license": "MIT",
   "author": "TwittrAPI",
   "mcpName": "io.github.twittrapi/twittrapi-mcp",
@@ -25,12 +25,17 @@
   },
   "homepage": "https://twittrapi.com",
   "keywords": [
+    "twitter api",
+    "x api",
+    "twitter scraper",
+    "tweets",
+    "twitter search",
+    "twitter followers",
+    "social media data",
+    "twittrapi",
     "mcp",
     "model-context-protocol",
-    "twitter",
-    "x",
-    "twitter-api",
-    "tweets",
+    "ai-agents",
     "claude"
   ],
   "scripts": {
