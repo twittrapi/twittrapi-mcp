@@ -10,6 +10,26 @@ followers, search results, lists, communities and trends.
 
 Not affiliated with X Corp.
 
+## Hosted server (no install)
+
+Apps that support remote MCP servers can connect by URL instead (available with the hosted
+release; see [twittrapi.com/docs/hosted-mcp](https://twittrapi.com/docs/hosted-mcp)):
+
+```text
+https://mcp.twittrapi.com/mcp
+```
+
+| Client | Setup |
+| --- | --- |
+| Claude.ai / Claude Desktop | Settings > Connectors > Add custom connector, paste the URL, Connect, log in to TwittrAPI and allow access (OAuth) |
+| ChatGPT | Settings > Apps & Connectors > Advanced settings > Developer mode, then Create with the URL and OAuth |
+| Claude Code | `claude mcp add --transport http twittrapi https://mcp.twittrapi.com/mcp` (OAuth), or add `--header "Authorization: Bearer $TWITTRAPI_API_KEY"` |
+| Cursor | `{"mcpServers": {"twittrapi": {"url": "https://mcp.twittrapi.com/mcp", "headers": {"X-API-KEY": "${env:TWITTRAPI_API_KEY}"}}}}` in `mcp.json` |
+| VS Code | `{"servers": {"twittrapi": {"type": "http", "url": "https://mcp.twittrapi.com/mcp"}}}` in `.vscode/mcp.json` (OAuth) |
+
+With OAuth the app never sees your API key; calls are billed to your balance like any other call.
+Connected apps are listed (and can be disconnected) in the dashboard under **Connected apps**.
+
 ## What you need
 
 - Node.js 20 or newer
@@ -172,24 +192,81 @@ API errors come back as tool errors with a short explanation, for example:
 npx -y twittrapi-mcp --http --port 3333 --host 0.0.0.0
 ```
 
-This serves a stateless [Streamable HTTP](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http)
-endpoint at `/mcp` and a health check at `/health`. The default host is `127.0.0.1`.
+This serves a stateless [Streamable HTTP](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#streamable-http)
+endpoint at `/mcp` and a health check at `/health`. The default host is `127.0.0.1`. Every POST
+gets its own server instance bound to the caller's credentials, so any number of instances can
+run behind a load balancer without sticky sessions. `GET /mcp` answers 405 (no server-initiated
+stream); the legacy SSE transport is not offered.
 
-In HTTP mode the server does not use a key from its own environment. Each request must carry the
-caller's key in one of these headers:
+In HTTP mode the server does not use a key from its own environment. Each request carries the
+caller's credentials:
 
 - `X-API-KEY: <key>` or `Authorization: Bearer <key>` for the direct API
 - `x-rapidapi-key: <key>` for RapidAPI
+- `Authorization: Bearer twa_at_...`: a TwittrAPI OAuth access token (hosted mode, below)
 
 `TWITTRAPI_BASE_URL` and `TWITTRAPI_RESPONSE_FORMAT` are still read from the environment; callers
 can pick the format per call with the `format` argument. Put the server behind HTTPS if it is
 reachable from the internet.
 
-Example client config for a hosted instance (Claude Code):
+Example client config for your own instance (Claude Code):
 
 ```sh
 claude mcp add --transport http twittrapi https://your-host.example.com/mcp --header "X-API-KEY: your-key"
 ```
+
+### Hosted mode with OAuth
+
+For clients that require OAuth (Claude.ai connectors, ChatGPT), the server acts as an OAuth 2.1
+resource server and the TwittrAPI dashboard as the authorization server (dynamic client
+registration, PKCE S256, consent screen, rotating refresh tokens). The server:
+
+- answers requests without credentials with `401` and
+  `WWW-Authenticate: Bearer resource_metadata="<origin>/.well-known/oauth-protected-resource/mcp", scope="mcp"`;
+- serves [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) metadata at
+  `/.well-known/oauth-protected-resource/mcp` and `/.well-known/oauth-protected-resource`, and
+  relays the dashboard's RFC 8414 metadata at `/.well-known/oauth-authorization-server`;
+- checks each access token with the dashboard's internal introspection endpoint (shared secret),
+  caches valid results for up to `OAUTH_CACHE_SECONDS` (30) and invalid ones for 5 s, and accepts
+  only tokens whose audience is `MCP_PUBLIC_URL`;
+- calls the API with the key of the account behind the token. The key never reaches the client.
+  Invalid or revoked tokens get `401` with `error="invalid_token"`; if the dashboard cannot be
+  reached the answer is `503` with `Retry-After`, so clients keep their tokens.
+
+### Environment (HTTP mode)
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PORT`, `HOST` | `3333`, `127.0.0.1` | Listen address (the Docker image uses `3000`, `0.0.0.0`) |
+| `TWITTRAPI_BASE_URL` | `https://api.twittrapi.com` | Gateway the tools call |
+| `TWITTRAPI_RESPONSE_FORMAT` | `simple` | Default format of tool results |
+| `MCP_PUBLIC_URL` | – | Public URL of `/mcp`, e.g. `https://mcp.twittrapi.com/mcp`. Token audience. |
+| `OAUTH_ISSUER` | – | Authorization server, e.g. `https://app.twittrapi.com` |
+| `OAUTH_INTROSPECTION_SECRET` | – | Shared secret with the dashboard (32+ characters). OAuth is on when these three are set. |
+| `OAUTH_INTROSPECTION_URL` | `$OAUTH_ISSUER/api/oauth/introspect` | Internal URL of the introspection endpoint |
+| `OAUTH_METADATA_URL` | `$OAUTH_ISSUER/.well-known/oauth-authorization-server` | Where the relayed metadata is fetched |
+| `OAUTH_CACHE_SECONDS` | `30` | Cache for valid tokens (max 300). Revocations take effect within this time. |
+| `MAX_CONCURRENCY_PER_KEY` | `8` | Requests in flight per key and instance; more get `429` with `Retry-After: 1`. `0` turns it off. |
+| `MAX_BODY_BYTES` | `262144` | Larger request bodies get `413` |
+| `REQUEST_TIMEOUT_MS` | `90000` | Requests running longer get `504` |
+| `ALLOWED_ORIGINS` | – | Comma-separated `Origin` allowlist for browser clients (DNS rebinding protection) |
+| `TRUST_PROXY` | – | `1` to log the client IP from `X-Forwarded-For` |
+| `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
+
+Logs are JSON lines on stdout, one per request: request id, client IP, auth kind
+(`api_key`, `rapidapi`, `oauth`, `none`), a hashed key id (`k_` + 12 hex characters), OAuth client
+and account id, JSON-RPC method, tool name, status and duration. Keys and tokens are never logged.
+
+### Docker / Coolify
+
+```sh
+docker build -t twittrapi-mcp .
+docker run -p 3000:3000 -e MCP_PUBLIC_URL=... -e OAUTH_ISSUER=... -e OAUTH_INTROSPECTION_SECRET=... twittrapi-mcp
+```
+
+In Coolify: build pack Dockerfile, port 3000, health check path `/health`, domain
+`mcp.twittrapi.com`, and the variables above. Set `OAUTH_INTROSPECTION_URL` to the dashboard's
+internal address when both run on the same server.
 
 ## Development
 
@@ -199,8 +276,9 @@ npm run build
 npm test
 ```
 
-`npm test` builds first, then runs unit tests and a protocol test that starts the server over
-stdio and HTTP against a local mock API.
+`npm test` builds first, then runs unit tests, a protocol test that starts the server over stdio
+and HTTP against a local mock API, and tests of hosted mode (OAuth challenge and metadata, token
+introspection and caching, audience check, limits, log redaction) against a fake dashboard.
 
 To add or change a tool, edit `src/endpoints.ts`. Each entry has a name, description, API path and
 zod parameter schemas. Every tool also gets `max_chars` and `format`. An entry can set a `simplify`

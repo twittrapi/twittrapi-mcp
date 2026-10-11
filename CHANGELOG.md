@@ -6,6 +6,28 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-11
+
+### Added
+
+- Hosted mode for `--http` (the server behind https://mcp.twittrapi.com/mcp): OAuth 2.1 resource
+  server. With `MCP_PUBLIC_URL`, `OAUTH_ISSUER` and `OAUTH_INTROSPECTION_SECRET` set, the server
+  accepts TwittrAPI OAuth access tokens (`twa_at_...`), checks them through the dashboard's
+  introspection endpoint (cached up to 30 s, audience bound to `MCP_PUBLIC_URL`) and calls the API
+  with the account's key, which never reaches the client. It answers unauthenticated requests
+  with `401` and `WWW-Authenticate: Bearer resource_metadata=...` and serves RFC 9728 metadata at
+  `/.well-known/oauth-protected-resource[/mcp]` (plus the authorization server metadata, relayed,
+  for older clients). API keys in `Authorization: Bearer`, `X-API-KEY` or `x-rapidapi-key` keep
+  working.
+- Limits for HTTP mode: request body (`MAX_BODY_BYTES`, 256 KB), time per request
+  (`REQUEST_TIMEOUT_MS`, 90 s), concurrent requests per key (`MAX_CONCURRENCY_PER_KEY`, 8, answers
+  429), optional `ALLOWED_ORIGINS`.
+- Structured JSON request logs on stdout (`LOG_LEVEL`): request id, auth kind, hashed key id,
+  OAuth client and account, JSON-RPC method, tool, status, duration. Keys and tokens are never
+  logged and are redacted from error text.
+- `Dockerfile` for hosting (Coolify: port 3000, health check `/health`), CORS for browser clients,
+  graceful shutdown on SIGTERM.
+
 ## [0.2.0] - 2026-10-11
 
 ### Breaking
