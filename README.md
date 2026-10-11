@@ -197,7 +197,7 @@ npx @modelcontextprotocol/inspector -e TWITTRAPI_API_KEY=your-key node dist/inde
 
 ## Support
 
-Questions, bugs or a higher rate limit: email support@twittrapi.com or open an issue in this repository. Service status: [status.twittrapi.com](https://status.twittrapi.com). News and changes: the TwittrAPI Telegram channel (link on the website).
+Questions, bugs or a higher rate limit: email support@twittrapi.com or open an issue in this repository. Service status: [twittrapi.com/status](https://twittrapi.com/status). News and changes: the TwittrAPI Telegram channel (link on the website).
 
 ## License
 
