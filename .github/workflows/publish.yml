@@ -23,8 +23,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
           cache: npm
+      # No registry-url above: setup-node would write a placeholder token into .npmrc,
+      # and npm would send it instead of using trusted publishing (OIDC).
       - name: Use an npm version that supports trusted publishing
         run: npm install -g npm@11
       - name: Check tag matches package.json version
@@ -52,5 +53,3 @@ jobs:
           FLAGS="--access public"
           if [ "${{ github.event.repository.private }}" = "false" ]; then FLAGS="$FLAGS --provenance"; fi
           npm publish $FLAGS
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
