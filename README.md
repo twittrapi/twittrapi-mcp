@@ -1,12 +1,19 @@
+<p align="center">
+  <a href="https://twittrapi.com"><img src=".github/banner.png" alt="twittrapi-mcp: Twitter/X MCP server for AI agents, npx -y twittrapi-mcp" width="100%"></a>
+</p>
+
 # twittrapi-mcp – Twitter/X MCP server for Claude, Cursor and other AI agents
 
 [![npm](https://img.shields.io/npm/v/twittrapi-mcp.svg)](https://www.npmjs.com/package/twittrapi-mcp)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 An [MCP](https://modelcontextprotocol.io) server for [TwittrAPI](https://twittrapi.com), a REST API for
 public Twitter/X data: tweets, profiles, followers, search, lists and communities. It lets Claude, Cursor
 and other MCP clients read that data, from $0.065 per 1,000 calls and with no X developer account.
 
-> **Get an API key:** [twittrapi.com/start](https://twittrapi.com/start?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Pricing](https://twittrapi.com/pricing?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Docs](https://twittrapi.com/docs?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · also available on [RapidAPI](https://rapidapi.com/viperscores-viperscores-default/api/twitter-aio)
+> **Get an API key:** [twittrapi.com/start](https://twittrapi.com/start?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Pricing](https://twittrapi.com/pricing?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Docs](https://twittrapi.com/docs?utm_source=github&utm_medium=readme&utm_campaign=twittrapi-mcp) · [Status](https://twittrapi.com/status) · also available on [RapidAPI](https://rapidapi.com/viperscores-viperscores-default/api/twitter-aio)
+
+**SDKs and integrations:** [Python](https://github.com/twittrapi/twittrapi-python) · [Node.js](https://github.com/twittrapi/twittrapi-node) · [Go](https://github.com/twittrapi/twittrapi-go) · [n8n](https://github.com/twittrapi/n8n-nodes-twittrapi) · [Make](https://github.com/twittrapi/twittrapi-make) · [Apify](https://github.com/twittrapi/twittrapi-apify) · [LangChain](https://github.com/twittrapi/langchain-twittrapi) · [LlamaIndex](https://github.com/twittrapi/llama-index-tools-twittrapi) · [Agent skill](https://github.com/twittrapi/twittrapi-skills) · [Examples](https://github.com/twittrapi/twittrapi-examples)
 
 Not affiliated with X Corp.
 
