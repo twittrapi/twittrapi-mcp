@@ -1,0 +1,48 @@
+name: Publish to npm
+
+# Runs when a GitHub release is published. The tag must be v<package.json version>, e.g. v0.2.0.
+# Authentication, in this order:
+#   1. NPM_TOKEN repository secret (granular token with publish rights) — needed for the very
+#      first publish, because npm trusted publishing can only be set up for existing packages.
+#   2. npm trusted publishing (OIDC) — configure it on npmjs.com (package → Settings → Trusted
+#      publisher → GitHub Actions, this repo, workflow publish.yml), then delete NPM_TOKEN.
+# Provenance is added automatically once the repository is public (npm requires a public repo).
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - name: Use an npm version that supports trusted publishing
+        run: npm install -g npm@11
+      - name: Check tag matches package.json version
+        if: github.event_name == 'release'
+        run: |
+          VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$VERSION" != "${{ github.event.release.tag_name }}" ]; then
+            echo "Release tag ${{ github.event.release.tag_name }} does not match package.json $VERSION"
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm test
+      - name: Publish
+        run: |
+          FLAGS="--access public"
+          if [ "${{ github.event.repository.private }}" = "false" ]; then FLAGS="$FLAGS --provenance"; fi
+          npm publish $FLAGS
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
