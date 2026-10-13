@@ -12,6 +12,7 @@ import {
 } from "./client.js";
 import { ENDPOINTS, type EndpointDef } from "./endpoints.js";
 import { DEFAULT_MAX_CHARS, MAX_MAX_CHARS, MIN_MAX_CHARS, formatResult } from "./output.js";
+import { SERVER_ICONS } from "./icons.js";
 import { VERSION } from "./version.js";
 
 /** Server instructions for the given default response format. */
@@ -110,7 +111,7 @@ export async function runEndpoint(
 
 export function createServer(client: TwittrApiClient, endpoints: EndpointDef[] = ENDPOINTS): McpServer {
   const server = new McpServer(
-    { name: "twittrapi-mcp", version: VERSION },
+    { name: "twittrapi-mcp", title: "TwittrAPI", version: VERSION, websiteUrl: "https://twittrapi.com", icons: SERVER_ICONS },
     { instructions: serverInstructions(client.config.format ?? DEFAULT_FORMAT) },
   );
   for (const def of endpoints) {

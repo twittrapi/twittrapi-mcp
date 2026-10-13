@@ -12,6 +12,7 @@ import {
   type OAuthConfig,
 } from "./oauth.js";
 import { createServer } from "./server.js";
+import { ICON_FILES } from "./icons.js";
 import { VERSION } from "./version.js";
 
 export interface HttpOptions {
@@ -184,6 +185,12 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
     if (req.method === "OPTIONS") {
       res.writeHead(204, CORS_HEADERS);
       res.end();
+      return;
+    }
+    const icon = req.method === "GET" || req.method === "HEAD" ? ICON_FILES[path] : undefined;
+    if (icon) {
+      res.writeHead(200, { "Content-Type": icon.type, "Content-Length": icon.body.length, "Cache-Control": "public, max-age=86400" });
+      res.end(req.method === "HEAD" ? undefined : icon.body);
       return;
     }
     if (path === "/health" || path === "/healthz") {
