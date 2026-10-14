@@ -276,19 +276,6 @@ export const ENDPOINTS: EndpointDef[] = [
     paginated: true,
   },
   {
-    name: "get_tweet_favorites",
-    title: "Get tweet likers",
-    description:
-      "Get the users who liked a tweet. X only exposes likers to the tweet's author for many tweets, so results can be empty. Paginated.",
-    path: "/tweet/{tweetId}/favorites",
-    params: {
-      tweetId: { in: "path", schema: numericId("tweetId").describe("Numeric tweet ID.") },
-      count: count("users"),
-      cursor,
-    },
-    paginated: true,
-  },
-  {
     name: "get_tweet_quotes",
     title: "Get tweet quotes",
     description: "Get tweets that quote a given tweet. Paginated.",

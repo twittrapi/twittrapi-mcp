@@ -8,7 +8,7 @@ import { VERSION } from "../src/version.js";
 const EXPECTED = [
   "get_user_by_username", "get_user_by_id", "username_to_id", "users_by_ids", "get_user_tweets",
   "get_user_tweets_and_replies", "get_user_media", "get_followers", "get_following", "get_verified_followers",
-  "search_tweets", "get_tweet", "get_tweet_retweets", "get_tweet_favorites", "get_tweet_quotes",
+  "search_tweets", "get_tweet", "get_tweet_retweets", "get_tweet_quotes",
   "get_list_details", "get_list_tweets", "get_list_members", "get_community", "get_community_tweets",
   "search_communities", "get_trends", "get_trend_locations",
 ];
@@ -55,7 +55,6 @@ describe("buildRequest", () => {
     ["search_tweets", { searchItem: "from:jack", category: "Latest", count: 10 }, "/search", { searchItem: "from:jack", category: "Latest", count: 10 }],
     ["get_tweet", { tweetId: "99", rankingMode: "Recency" }, "/tweet/99", { rankingMode: "Recency" }],
     ["get_tweet_retweets", { tweetId: "99" }, "/tweet/99/retweets", {}],
-    ["get_tweet_favorites", { tweetId: "99" }, "/tweet/99/favorites", {}],
     ["get_tweet_quotes", { tweetId: "99" }, "/tweet/99/quotes", {}],
     ["get_list_details", { listId: "5" }, "/lists/details", { listId: "5" }],
     ["get_list_tweets", { listId: "5" }, "/lists/tweets", { listId: "5" }],

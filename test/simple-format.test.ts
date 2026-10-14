@@ -121,7 +121,7 @@ describe("simple results", () => {
 
   it("reports the last page when hasNextPage is false", async () => {
     const { client } = setup(simple("tweet-tweetid-favorites"));
-    const text = await run(client, "get_tweet_favorites", { tweetId: "1" });
+    const text = await run(client, "search_tweets", { searchItem: "nothing here" });
     expect(text.split("\n")[0]).toBe("next_cursor: none (last page, no more results)");
   });
 

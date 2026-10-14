@@ -1,6 +1,6 @@
 {
   "name": "twittrapi-mcp",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "MCP server for TwittrAPI: read public Twitter/X tweets, profiles, followers and search results. Pay as you go from $0.065 per 1,000 calls.",
   "license": "MIT",
   "author": "TwittrAPI",

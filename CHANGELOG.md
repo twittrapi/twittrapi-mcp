@@ -6,6 +6,14 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-14
+
+### Removed
+
+- `get_tweet_favorites` (users who liked a tweet). X shows likers only to the tweet's author, so
+  the API now needs that account's session cookie and proxy (`POST /tweet/{tweetId}/favorites`),
+  which an agent does not have.
+
 ## [0.3.2] - 2026-10-14
 
 ### Changed

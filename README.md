@@ -136,7 +136,6 @@ All tools are read-only.
 | `search_tweets` | Search with X operators; Top, Latest, People, Photos or Videos |
 | `get_tweet` | A tweet and its reply thread |
 | `get_tweet_retweets` | Users who retweeted a tweet |
-| `get_tweet_favorites` | Users who liked a tweet |
 | `get_tweet_quotes` | Tweets quoting a tweet |
 | `get_list_details` | List name, owner and counts |
 | `get_list_tweets` | Tweets from a list's members |
@@ -181,7 +180,7 @@ Pass next_cursor as `cursor` to get the next page.
 
 On the last page the header reads `next_cursor: none (last page, no more results)`. In the simple
 format that is when `hasNextPage` is false. In the raw format it happens when the response has no
-next cursor (empty likes or likers timelines included), when X returns the cursor you just sent, or
+next cursor (empty likes timelines included), when X returns the cursor you just sent, or
 when a page holds only cursors and no results.
 
 ### Errors
