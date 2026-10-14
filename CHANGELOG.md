@@ -6,6 +6,12 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-14
+
+### Changed
+
+- `users_by_ids` accepts up to 500 IDs per call (was 100), matching the API.
+
 ## [0.3.1] - 2026-10-14
 
 ### Added

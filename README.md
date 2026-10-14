@@ -126,7 +126,7 @@ All tools are read-only.
 | `get_user_by_username` | Profile by handle, including the numeric user ID |
 | `get_user_by_id` | Profile by numeric user ID |
 | `username_to_id` | Resolve a handle to its user ID |
-| `users_by_ids` | Profiles for up to 100 user IDs at once |
+| `users_by_ids` | Profiles for up to 500 user IDs at once |
 | `get_user_tweets` | A user's tweets |
 | `get_user_tweets_and_replies` | A user's tweets and replies |
 | `get_user_media` | A user's tweets with photos or videos |

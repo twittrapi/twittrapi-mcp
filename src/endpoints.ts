@@ -166,7 +166,7 @@ export const ENDPOINTS: EndpointDef[] = [
   {
     name: "users_by_ids",
     title: "Get users by IDs",
-    description: "Get profiles for up to 100 X users in one call, by numeric user ID.",
+    description: "Get profiles for up to 500 X users in one call, by numeric user ID.",
     path: "/user/users/by/ids",
     params: {
       ids: {
@@ -174,8 +174,8 @@ export const ENDPOINTS: EndpointDef[] = [
         schema: z
           .array(numericId("Each id"))
           .min(1)
-          .max(100)
-          .describe("Numeric X user IDs, 1 to 100."),
+          .max(500)
+          .describe("Numeric X user IDs, 1 to 500."),
         serialize: (v) => (v as string[]).join(","),
       },
     },

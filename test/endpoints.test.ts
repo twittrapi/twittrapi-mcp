@@ -73,9 +73,10 @@ describe("buildRequest", () => {
   it("requires userId or username for user timelines", () => {
     expect(() => buildRequest(ep("get_followers"), {})).toThrow(/userId or username/);
   });
-  it("rejects more than 100 ids at the schema level", () => {
+  it("rejects more than 500 ids at the schema level", () => {
     const schema = ep("users_by_ids").params.ids.schema;
-    expect(schema.safeParse(Array.from({ length: 101 }, (_, i) => String(i))).success).toBe(false);
+    expect(schema.safeParse(Array.from({ length: 501 }, (_, i) => String(i))).success).toBe(false);
+    expect(schema.safeParse(Array.from({ length: 500 }, (_, i) => String(i))).success).toBe(true);
     expect(schema.safeParse(["1"]).success).toBe(true);
     expect(schema.safeParse(["abc"]).success).toBe(false);
   });
