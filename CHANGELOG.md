@@ -6,6 +6,15 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-14
+
+### Added
+
+- The hosted server serves the TwittrAPI icon (`/favicon.ico`, `/favicon.svg`, `/icon.png`) and
+  lists it in `serverInfo.icons` with a title and website, so connector lists show the brand.
+- `server.json` lists the hosted server (`https://mcp.twittrapi.com/mcp`, Streamable HTTP) as a
+  remote next to the npm package.
+
 ## [0.3.0] - 2026-10-11
 
 ### Added
