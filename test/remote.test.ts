@@ -1,9 +1,9 @@
-import { createServer, type IncomingHttpHeaders, type Server } from "node:http";
+import { createServer, type IncomingHttpHeaders, type IncomingMessage, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { ConcurrencyLimiter, startHttpServer } from "../src/http.js";
+import { ConcurrencyLimiter, credentialFromRequest, startHttpServer } from "../src/http.js";
 import { createLogger, keyId, redact } from "../src/log.js";
 import { canonicalUrl, oauthConfigFromEnv, protectedResourceMetadataUrl, wwwAuthenticate } from "../src/oauth.js";
 
@@ -223,6 +223,38 @@ describe("hosted mode: tool calls", () => {
       expect(apiSeen[0].headers["x-api-key"]).toBe("my-api-key-123");
     }
     expect(s.lines.join("\n")).not.toContain("my-api-key-123");
+  });
+
+  it("answers 400 for an x-rapidapi-host that is not a RapidAPI host", async () => {
+    for (const host of ["127.0.0.1:8080", "twttr.p.rapidapi.com/v1"]) {
+      const res = await fetch(s.endpoint, rpc(INIT, { "x-rapidapi-key": "rk-123456", "x-rapidapi-host": host }));
+      expect(res.status).toBe(400);
+      expect(((await res.json()) as { error: { message: string } }).error.message).toMatch(/x-rapidapi-host/);
+    }
+  });
+});
+
+describe("credentialFromRequest", () => {
+  const req = (headers: Record<string, string>) => ({ headers }) as unknown as IncomingMessage;
+
+  it("reads x-rapidapi-host next to x-rapidapi-key", () => {
+    expect(credentialFromRequest(req({ "x-rapidapi-key": "rk", "x-rapidapi-host": "https://twttr.p.rapidapi.com/" }))).toEqual({
+      kind: "api_key",
+      config: { mode: "rapidapi", apiKey: "rk", rapidApiHost: "twttr.p.rapidapi.com" },
+    });
+    expect(credentialFromRequest(req({ "x-rapidapi-key": "rk" }))).toEqual({
+      kind: "api_key",
+      config: { mode: "rapidapi", apiKey: "rk" },
+    });
+  });
+
+  it("rejects hosts outside .p.rapidapi.com and ignores the host header in direct mode", () => {
+    expect(credentialFromRequest(req({ "x-rapidapi-key": "rk", "x-rapidapi-host": "169.254.169.254" })).kind).toBe("invalid");
+    expect(credentialFromRequest(req({ "x-rapidapi-key": "rk", "x-rapidapi-host": "evil.com/x.p.rapidapi.com" })).kind).toBe(
+      "invalid",
+    );
+    const direct = credentialFromRequest(req({ "x-api-key": "k", "x-rapidapi-host": "not a host" }));
+    expect(direct.kind).toBe("api_key");
   });
 });
 

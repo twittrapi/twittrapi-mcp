@@ -29,6 +29,24 @@ export function parseResponseFormat(value: string | undefined, name = "TWITTRAPI
   return v as ResponseFormat;
 }
 
+/**
+ * Parses a RapidAPI host setting (RAPIDAPI_HOST). Each TwittrAPI listing on RapidAPI has its own host
+ * with the same paths. Accepts "https://" and a trailing slash and returns the bare host. Empty means
+ * the default (RAPIDAPI_HOST); a value with a path or spaces is an error.
+ */
+export function parseRapidApiHost(value: string | undefined, name = "RAPIDAPI_HOST"): string | undefined {
+  if (!value?.trim()) return undefined;
+  const host = value
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/+$/, "")
+    .toLowerCase();
+  if (!host || /[\s/?#@]/.test(host)) {
+    throw new Error(`Invalid ${name} value "${value}". Use a host like ${RAPIDAPI_HOST}, without a path.`);
+  }
+  return host;
+}
+
 export interface ClientConfig {
   /** "direct" sends X-API-KEY to the TwittrAPI base URL, "rapidapi" goes through RapidAPI. */
   mode: AuthMode;
@@ -36,6 +54,8 @@ export interface ClientConfig {
   apiKey?: string;
   /** Base URL for direct mode. Ignored in RapidAPI mode. */
   baseUrl?: string;
+  /** RapidAPI host (normalized), used for x-rapidapi-host and the URL. Undefined means RAPIDAPI_HOST. */
+  rapidApiHost?: string;
   timeoutMs?: number;
   /** Default response format for tool results. Undefined means DEFAULT_FORMAT ("simple"). */
   format?: ResponseFormat;
@@ -72,7 +92,7 @@ export class TwittrApiError extends Error {
 
 /**
  * Reads auth config and the response format from environment variables (stdio mode). Throws on an
- * invalid TWITTRAPI_RESPONSE_FORMAT.
+ * invalid TWITTRAPI_RESPONSE_FORMAT, or an invalid RAPIDAPI_HOST in RapidAPI mode.
  */
 export function configFromEnv(env: NodeJS.ProcessEnv = process.env): ClientConfig {
   const baseUrl = env.TWITTRAPI_BASE_URL?.trim() || DEFAULT_BASE_URL;
@@ -81,7 +101,10 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): ClientConfi
   const direct = env.TWITTRAPI_API_KEY?.trim();
   if (direct) return { mode: "direct", apiKey: direct, baseUrl, ...extra };
   const rapid = env.RAPIDAPI_KEY?.trim();
-  if (rapid) return { mode: "rapidapi", apiKey: rapid, ...extra };
+  if (rapid) {
+    const rapidApiHost = parseRapidApiHost(env.RAPIDAPI_HOST);
+    return { mode: "rapidapi", apiKey: rapid, ...(rapidApiHost ? { rapidApiHost } : {}), ...extra };
+  }
   return { mode: "direct", apiKey: undefined, baseUrl, ...extra };
 }
 
@@ -105,7 +128,7 @@ export function buildHeaders(config: ClientConfig): Record<string, string> {
   if (!config.apiKey) return headers;
   if (config.mode === "rapidapi") {
     headers["x-rapidapi-key"] = config.apiKey;
-    headers["x-rapidapi-host"] = RAPIDAPI_HOST;
+    headers["x-rapidapi-host"] = config.rapidApiHost || RAPIDAPI_HOST;
   } else {
     headers["X-API-KEY"] = config.apiKey;
   }
@@ -147,6 +170,7 @@ export function mapHttpError(
       break;
     case status === 403:
       message = `Access denied (403). The key may lack access, or X refused the request.`;
+      if (mode === "rapidapi") message += " If you subscribed to another TwittrAPI listing on RapidAPI, set RAPIDAPI_HOST to its host.";
       break;
     case status === 404:
       message = "Not found (404). The user, tweet, list or community may not exist, be private, or be suspended.";
@@ -179,7 +203,8 @@ export class TwittrApiClient {
   }
 
   get baseUrl(): string {
-    return this.config.mode === "rapidapi" ? RAPIDAPI_BASE_URL : this.config.baseUrl || DEFAULT_BASE_URL;
+    if (this.config.mode === "rapidapi") return `https://${this.config.rapidApiHost || RAPIDAPI_HOST}`;
+    return this.config.baseUrl || DEFAULT_BASE_URL;
   }
 
   async get(req: ApiRequest): Promise<ApiResponse> {

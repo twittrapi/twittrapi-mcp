@@ -7,6 +7,7 @@ import {
   buildUrl,
   configFromEnv,
   mapHttpError,
+  parseRapidApiHost,
 } from "../src/client.js";
 
 function mockFetch(status: number, body: unknown, headers: Record<string, string> = {}) {
@@ -32,6 +33,19 @@ describe("configFromEnv", () => {
   it("falls back to RapidAPI", () => {
     expect(configFromEnv({ RAPIDAPI_KEY: "r" })).toEqual({ mode: "rapidapi", apiKey: "r" });
   });
+  it("reads RAPIDAPI_HOST in RapidAPI mode", () => {
+    expect(configFromEnv({ RAPIDAPI_KEY: "r", RAPIDAPI_HOST: "https://twttr.p.rapidapi.com/" })).toEqual({
+      mode: "rapidapi",
+      apiKey: "r",
+      rapidApiHost: "twttr.p.rapidapi.com",
+    });
+    expect(() => configFromEnv({ RAPIDAPI_KEY: "r", RAPIDAPI_HOST: "twttr.p.rapidapi.com/v1" })).toThrow(/RAPIDAPI_HOST/);
+  });
+  it("ignores RAPIDAPI_HOST in direct mode", () => {
+    const c = configFromEnv({ TWITTRAPI_API_KEY: "k", RAPIDAPI_KEY: "r", RAPIDAPI_HOST: "not a host/" });
+    expect(c.mode).toBe("direct");
+    expect(c.rapidApiHost).toBeUndefined();
+  });
   it("returns no key when nothing is set", () => {
     expect(configFromEnv({}).apiKey).toBeUndefined();
   });
@@ -49,6 +63,25 @@ describe("buildUrl", () => {
   });
 });
 
+describe("parseRapidApiHost", () => {
+  it.each(["twttr.p.rapidapi.com", "https://twttr.p.rapidapi.com", "https://twttr.p.rapidapi.com/", " HTTP://Twttr.p.rapidapi.com// "])(
+    "normalizes %j",
+    (value) => {
+      expect(parseRapidApiHost(value)).toBe("twttr.p.rapidapi.com");
+    },
+  );
+  it("treats empty as the default", () => {
+    expect(parseRapidApiHost(undefined)).toBeUndefined();
+    expect(parseRapidApiHost("  ")).toBeUndefined();
+  });
+  it.each(["https://twttr.p.rapidapi.com/v1", "twttr.p.rapidapi.com/user", "twttr p.rapidapi.com", "https://"])(
+    "rejects %j",
+    (value) => {
+      expect(() => parseRapidApiHost(value)).toThrow(/Invalid RAPIDAPI_HOST value.*without a path/);
+    },
+  );
+});
+
 describe("headers", () => {
   it("direct mode sends X-API-KEY", () => {
     const h = buildHeaders({ mode: "direct", apiKey: "abc" });
@@ -60,6 +93,10 @@ describe("headers", () => {
     expect(h["x-rapidapi-key"]).toBe("abc");
     expect(h["x-rapidapi-host"]).toBe(RAPIDAPI_HOST);
     expect(h["X-API-KEY"]).toBeUndefined();
+  });
+  it("rapidapi mode sends a configured host", () => {
+    const h = buildHeaders({ mode: "rapidapi", apiKey: "abc", rapidApiHost: "twttr.p.rapidapi.com" });
+    expect(h["x-rapidapi-host"]).toBe("twttr.p.rapidapi.com");
   });
 });
 
@@ -82,6 +119,22 @@ describe("TwittrApiClient.get", () => {
     const h = init!.headers as Record<string, string>;
     expect(h["x-rapidapi-key"]).toBe("r1");
     expect(h["x-rapidapi-host"]).toBe("twitter-aio.p.rapidapi.com");
+  });
+  it("calls a configured RapidAPI host for the URL and the header", async () => {
+    const f = mockFetch(200, {});
+    const c = new TwittrApiClient({ mode: "rapidapi", apiKey: "r1", rapidApiHost: "twttr.p.rapidapi.com", fetch: f });
+    await c.get({ path: "/tweet/1" });
+    const [url, init] = f.mock.calls[0];
+    expect(url).toBe("https://twttr.p.rapidapi.com/tweet/1");
+    expect((init!.headers as Record<string, string>)["x-rapidapi-host"]).toBe("twttr.p.rapidapi.com");
+  });
+  it("direct mode ignores rapidApiHost", async () => {
+    const f = mockFetch(200, {});
+    const c = new TwittrApiClient({ mode: "direct", apiKey: "k", rapidApiHost: "twttr.p.rapidapi.com", fetch: f });
+    await c.get({ path: "/tweet/1" });
+    const [url, init] = f.mock.calls[0];
+    expect(url).toBe("https://api.twittrapi.com/tweet/1");
+    expect((init!.headers as Record<string, string>)["x-rapidapi-host"]).toBeUndefined();
   });
   it("errors without calling fetch when no key is set", async () => {
     const f = mockFetch(200, {});
@@ -109,6 +162,12 @@ describe("TwittrApiClient.get", () => {
     expect(mapHttpError(401, { message: "You are not subscribed" }, "", "rapidapi").message).toMatch(
       /RAPIDAPI_KEY.*not subscribed/,
     );
+  });
+  it("hints at RAPIDAPI_HOST on 403 in rapidapi mode", () => {
+    expect(mapHttpError(403, { message: "You are not subscribed to this API." }, "", "rapidapi").message).toMatch(
+      /RAPIDAPI_HOST.*not subscribed/,
+    );
+    expect(mapHttpError(403, {}, "", "direct").message).not.toMatch(/RAPIDAPI_HOST/);
   });
   it("maps network failures", async () => {
     const f = vi.fn(async () => {

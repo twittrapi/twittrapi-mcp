@@ -100,6 +100,7 @@ Any client that can start a stdio server works. The command is `npx -y twittrapi
 | --- | --- | --- |
 | `TWITTRAPI_API_KEY` | one of the two keys | Your TwittrAPI key. Sent as the `X-API-KEY` header. |
 | `RAPIDAPI_KEY` | one of the two keys | RapidAPI key. Used only when `TWITTRAPI_API_KEY` is not set. |
+| `RAPIDAPI_HOST` | no | Host of your RapidAPI listing. Default `twitter-aio.p.rapidapi.com`. |
 | `TWITTRAPI_BASE_URL` | no | API base URL for the direct API. Default `https://api.twittrapi.com`. |
 | `TWITTRAPI_RESPONSE_FORMAT` | no | `simple` (default) or `raw`. See [Response format](#response-format). |
 
@@ -116,6 +117,9 @@ If you bought access through RapidAPI, set `RAPIDAPI_KEY` instead of `TWITTRAPI_
 
 Requests then go to `https://twitter-aio.p.rapidapi.com` with the `x-rapidapi-key` and
 `x-rapidapi-host` headers. The tools and their output are the same.
+
+Subscribed to another TwittrAPI listing on RapidAPI? Set its host:
+`"RAPIDAPI_HOST": "twttr.p.rapidapi.com"`.
 
 ## Tools
 
@@ -208,7 +212,8 @@ In HTTP mode the server does not use a key from its own environment. Each reques
 caller's credentials:
 
 - `X-API-KEY: <key>` or `Authorization: Bearer <key>` for the direct API
-- `x-rapidapi-key: <key>` for RapidAPI
+- `x-rapidapi-key: <key>` for RapidAPI, plus `x-rapidapi-host: <host>` for a listing other than
+  `twitter-aio.p.rapidapi.com` (must end in `.p.rapidapi.com`)
 - `Authorization: Bearer twa_at_...`: a TwittrAPI OAuth access token (hosted mode, below)
 
 `TWITTRAPI_BASE_URL` and `TWITTRAPI_RESPONSE_FORMAT` are still read from the environment; callers

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { DEFAULT_BASE_URL, TwittrApiClient, type ClientConfig, type ResponseFormat } from "./client.js";
+import { DEFAULT_BASE_URL, TwittrApiClient, parseRapidApiHost, type ClientConfig, type ResponseFormat } from "./client.js";
 import { keyId, silentLogger, type Logger } from "./log.js";
 import {
   OAUTH_ACCESS_TOKEN_PREFIX,
@@ -53,7 +53,14 @@ function header(req: IncomingMessage, name: string): string | undefined {
 export type Credential =
   | { kind: "api_key"; config: ClientConfig }
   | { kind: "oauth"; token: string }
-  | { kind: "none" };
+  | { kind: "none" }
+  | { kind: "invalid"; message: string };
+
+/**
+ * A caller-supplied x-rapidapi-host decides where the server sends the request, so only RapidAPI
+ * hosts are accepted (no requests to internal addresses).
+ */
+const RAPIDAPI_HOST_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.p\.rapidapi\.com$/;
 
 /**
  * Reads the caller's credential from the request. In HTTP mode the server never uses a key from
@@ -69,7 +76,18 @@ export function credentialFromRequest(req: IncomingMessage, baseUrl?: string): C
   if (bearer?.startsWith(OAUTH_ACCESS_TOKEN_PREFIX)) return { kind: "oauth", token: bearer };
   if (bearer) return { kind: "api_key", config: { mode: "direct", apiKey: bearer, baseUrl: baseUrl || DEFAULT_BASE_URL } };
   const rapid = header(req, "x-rapidapi-key");
-  if (rapid) return { kind: "api_key", config: { mode: "rapidapi", apiKey: rapid } };
+  if (rapid) {
+    let rapidApiHost: string | undefined;
+    try {
+      rapidApiHost = parseRapidApiHost(header(req, "x-rapidapi-host"), "x-rapidapi-host");
+    } catch (err) {
+      return { kind: "invalid", message: (err as Error).message };
+    }
+    if (rapidApiHost && !RAPIDAPI_HOST_PATTERN.test(rapidApiHost)) {
+      return { kind: "invalid", message: `Invalid x-rapidapi-host value "${rapidApiHost}". Use a host ending in .p.rapidapi.com.` };
+    }
+    return { kind: "api_key", config: { mode: "rapidapi", apiKey: rapid, ...(rapidApiHost ? { rapidApiHost } : {}) } };
+  }
   return { kind: "none" };
 }
 
@@ -83,7 +101,7 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers":
-    "Authorization, Content-Type, Accept, X-API-KEY, x-rapidapi-key, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID",
+    "Authorization, Content-Type, Accept, X-API-KEY, x-rapidapi-key, x-rapidapi-host, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID",
   "Access-Control-Expose-Headers": "WWW-Authenticate, Mcp-Session-Id, Mcp-Protocol-Version, Retry-After",
   "Access-Control-Max-Age": "600",
 };
@@ -250,6 +268,11 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
           ? "Authentication required. Connect with OAuth, or send your TwittrAPI key as Authorization: Bearer <key> or X-API-KEY."
           : "Missing API key. Send X-API-KEY (or Authorization: Bearer <key>), or x-rapidapi-key for RapidAPI.",
       );
+      return;
+    }
+    if (cred.kind === "invalid") {
+      ctx.auth = "rapidapi";
+      sendJson(res, 400, rpcError(-32600, cred.message), CORS_HEADERS);
       return;
     }
     if (cred.kind === "oauth") {

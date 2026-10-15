@@ -13,12 +13,14 @@ Usage:
   twittrapi-mcp                      Run over stdio (for Claude Desktop, Claude Code, Cursor)
   twittrapi-mcp --http [--port 3333] [--host 127.0.0.1]
                                      Run a Streamable HTTP server at /mcp. Callers send their
-                                     own key (X-API-KEY, Authorization: Bearer, x-rapidapi-key)
+                                     own key (X-API-KEY, Authorization: Bearer, x-rapidapi-key
+                                     with optional x-rapidapi-host)
                                      or, with OAuth configured, a TwittrAPI OAuth access token.
 
 Environment (stdio mode):
   TWITTRAPI_API_KEY     Your TwittrAPI key (direct API)
   RAPIDAPI_KEY          Your RapidAPI key, used if TWITTRAPI_API_KEY is not set
+  RAPIDAPI_HOST         Host of your RapidAPI listing (default twitter-aio.p.rapidapi.com)
   TWITTRAPI_BASE_URL    Override the API base URL (default https://api.twittrapi.com)
   TWITTRAPI_RESPONSE_FORMAT
                         simple (default): compact JSON, far fewer tokens.

@@ -6,6 +6,19 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-15
+
+### Added
+
+- `RAPIDAPI_HOST` for customers subscribed to another TwittrAPI listing on RapidAPI. It sets the
+  `x-rapidapi-host` header and the URL (`https://<host>`). `https://` and a trailing slash are
+  accepted; a value with a path or spaces stops the server with an error. The default stays
+  `twitter-aio.p.rapidapi.com`, and direct mode ignores it.
+- HTTP mode: callers can send `x-rapidapi-host` next to `x-rapidapi-key`. Only hosts ending in
+  `.p.rapidapi.com` are accepted; others get a 400.
+- A 403 in RapidAPI mode mentions `RAPIDAPI_HOST`, since a key for another listing gets
+  "not subscribed".
+
 ## [0.4.0] - 2026-10-14
 
 ### Removed

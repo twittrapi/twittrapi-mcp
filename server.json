@@ -8,13 +8,13 @@
     "source": "github"
   },
   "websiteUrl": "https://www.twittrapi.com/docs/hosted-mcp",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "twittrapi-mcp",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "transport": {
         "type": "stdio"
       },
@@ -30,6 +30,13 @@
           "description": "RapidAPI key for the Twitter AIO API. Used when TWITTRAPI_API_KEY is not set.",
           "isRequired": false,
           "isSecret": true
+        },
+        {
+          "name": "RAPIDAPI_HOST",
+          "description": "Host of your TwittrAPI listing on RapidAPI. Change it if you subscribed to another listing.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "twitter-aio.p.rapidapi.com"
         },
         {
           "name": "TWITTRAPI_BASE_URL",
