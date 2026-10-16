@@ -103,6 +103,9 @@ Any client that can start a stdio server works. The command is `npx -y twittrapi
 | `RAPIDAPI_HOST` | no | Host of your RapidAPI listing. Default `twitter-aio.p.rapidapi.com`. |
 | `TWITTRAPI_BASE_URL` | no | API base URL for the direct API. Default `https://api.twittrapi.com`. |
 | `TWITTRAPI_RESPONSE_FORMAT` | no | `simple` (default) or `raw`. See [Response format](#response-format). |
+| `TWITTRAPI_X_COOKIE` | no | Cookie of your own logged-in x.com session. Turns on the [account tools](#account-tools) together with `TWITTRAPI_X_PROXY`. |
+| `TWITTRAPI_X_PROXY` | no | Your proxy for the account tools, `http://user:pass@host:port`. |
+| `TWITTRAPI_X_CHAT_PASSCODE` | no | Your X Chat passcode. Adds `send_dm` and message text in `list_dm_conversations`. |
 
 If neither key is set, the server still starts and lists its tools, but every call returns an
 error explaining how to set a key.
@@ -123,7 +126,8 @@ Subscribed to another TwittrAPI listing on RapidAPI? Set its host:
 
 ## Tools
 
-All tools are read-only.
+These tools read public data and are always available. The [account tools](#account-tools) are
+added when you configure your X session.
 
 | Tool | What it does |
 | --- | --- |
@@ -152,6 +156,44 @@ All tools are read-only.
 
 The user timeline tools (`get_user_tweets`, `get_followers` and so on) accept either `userId` or
 `username`.
+
+### Account tools
+
+With `TWITTRAPI_X_COOKIE` and `TWITTRAPI_X_PROXY` set, the server also lists tools that act on
+your own X account:
+
+| Tool | What it does |
+| --- | --- |
+| `create_tweet` | Post a tweet; optional quote (`quoteUrl`), poll (`pollChoices`) and reply limit |
+| `reply_to_tweet` | Reply to a tweet |
+| `delete_tweet` | Delete one of your tweets |
+| `like_tweet`, `unlike_tweet` | Like or unlike a tweet |
+| `retweet`, `unretweet` | Retweet or undo a retweet |
+| `bookmark_tweet`, `unbookmark_tweet` | Add or remove a bookmark |
+| `follow_user`, `unfollow_user` | Follow or unfollow (by `userId` or `username`) |
+| `list_dm_conversations` | Your DM inbox |
+| `send_dm` | Send a direct message (needs `TWITTRAPI_X_CHAT_PASSCODE`) |
+| `create_list` | Create a list |
+| `add_list_member`, `remove_list_member` | Add or remove a list member |
+| `create_draft`, `list_drafts` | Save a draft, list your drafts |
+
+How to get the cookie and set up a proxy: [twittrapi.com/docs/x-session](https://twittrapi.com/docs/x-session).
+The cookie needs `auth_token` and `ct0`; direct messages also need `twid`.
+
+```json
+"env": {
+  "TWITTRAPI_API_KEY": "your-key",
+  "TWITTRAPI_X_COOKIE": "auth_token=...; ct0=...; twid=u%3D...",
+  "TWITTRAPI_X_PROXY": "http://user:pass@host:port"
+}
+```
+
+- The cookie and proxy stay in the server's configuration. They are not tool arguments, so the
+  model never sees them, and they are never logged or returned in a result.
+- Write tools are marked `readOnlyHint: false` (deletions and undo actions also
+  `destructiveHint: true`), so clients ask before running them.
+- Each call is one billed API call, like the read tools.
+- Account tools are only available over stdio. HTTP mode and the hosted server do not offer them.
 
 ### Response format
 
@@ -216,7 +258,8 @@ caller's credentials:
   `twitter-aio.p.rapidapi.com` (must end in `.p.rapidapi.com`)
 - `Authorization: Bearer twa_at_...`: a TwittrAPI OAuth access token (hosted mode, below)
 
-`TWITTRAPI_BASE_URL` and `TWITTRAPI_RESPONSE_FORMAT` are still read from the environment; callers
+The [account tools](#account-tools) are not offered in HTTP mode; `TWITTRAPI_X_COOKIE` and
+`TWITTRAPI_X_PROXY` are ignored there. `TWITTRAPI_BASE_URL` and `TWITTRAPI_RESPONSE_FORMAT` are still read from the environment; callers
 can pick the format per call with the `format` argument. Put the server behind HTTPS if it is
 reachable from the internet.
 
@@ -293,7 +336,7 @@ introspection and caching, audience check, limits, log redaction) against a fake
 
 To add or change a tool, edit `src/endpoints.ts`. Each entry has a name, description, API path and
 zod parameter schemas. Every tool also gets `max_chars` and `format`. An entry can set a `simplify`
-function to reshape the parsed JSON further; none do.
+function to reshape the parsed JSON further; none do. Account tools live in `src/actions.ts`.
 
 Try the server interactively with the MCP Inspector:
 

@@ -8,13 +8,13 @@
     "source": "github"
   },
   "websiteUrl": "https://www.twittrapi.com/docs/hosted-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "twittrapi-mcp",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "transport": {
         "type": "stdio"
       },
@@ -55,6 +55,24 @@
             "simple",
             "raw"
           ]
+        },
+        {
+          "name": "TWITTRAPI_X_COOKIE",
+          "description": "Cookie of your own logged-in x.com session (auth_token, ct0, twid). With TWITTRAPI_X_PROXY set, adds the account tools (post, like, follow, DMs, lists, drafts).",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "TWITTRAPI_X_PROXY",
+          "description": "Your proxy for the account tools, http://user:pass@host:port.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "TWITTRAPI_X_CHAT_PASSCODE",
+          "description": "Your X Chat passcode. Adds send_dm and message text in the DM inbox.",
+          "isRequired": false,
+          "isSecret": true
         }
       ]
     }

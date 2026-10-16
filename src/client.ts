@@ -61,6 +61,78 @@ export interface ClientConfig {
   format?: ResponseFormat;
   /** Injected for tests. Defaults to the global fetch. */
   fetch?: typeof fetch;
+  /**
+   * The user's own X session for the account-action (write) tools, from TWITTRAPI_X_COOKIE and
+   * TWITTRAPI_X_PROXY. Never shown to the model and never logged. Undefined: no write tools.
+   */
+  xSession?: XSession;
+}
+
+/** Cookie and proxy of the user's own X account, sent in the body of the /client endpoints. */
+export interface XSession {
+  /** Cookie header of a logged-in x.com session: auth_token=...; ct0=...; twid=u%3D... */
+  cookie: string;
+  /** The user's proxy, http://user:pass@host:port. */
+  proxy: string;
+  /** X Chat passcode (TWITTRAPI_X_CHAT_PASSCODE), needed to read and send direct messages. */
+  chatPasscode?: string;
+}
+
+/**
+ * Reads the X session from TWITTRAPI_X_COOKIE and TWITTRAPI_X_PROXY. Returns undefined when either is
+ * missing. Throws (without echoing the values) when the cookie lacks auth_token or ct0, or the proxy
+ * is not an http(s) URL with a host.
+ */
+export function xSessionFromEnv(env: NodeJS.ProcessEnv = process.env): XSession | undefined {
+  const cookie = env.TWITTRAPI_X_COOKIE?.trim();
+  const proxy = env.TWITTRAPI_X_PROXY?.trim();
+  if (!cookie || !proxy) return undefined;
+  if (!/(?:^|;\s*)auth_token=[^;\s]+/.test(cookie) || !/(?:^|;\s*)ct0=[^;\s]+/.test(cookie)) {
+    throw new Error("TWITTRAPI_X_COOKIE must be the cookie of a logged-in x.com session and contain auth_token and ct0.");
+  }
+  let url: URL | undefined;
+  try {
+    url = new URL(proxy);
+  } catch {
+    url = undefined;
+  }
+  if (!url || !/^https?:$/.test(url.protocol) || !url.hostname) {
+    throw new Error("TWITTRAPI_X_PROXY must be a proxy URL like http://user:pass@host:port.");
+  }
+  const chatPasscode = env.TWITTRAPI_X_CHAT_PASSCODE?.trim();
+  return { cookie, proxy, ...(chatPasscode ? { chatPasscode } : {}) };
+}
+
+/**
+ * Removes the X session (cookie, its token values, proxy, proxy credentials, chat passcode) from text,
+ * so an API error that echoes the request can never put it into a tool result.
+ */
+export function scrubSession(text: string, session: XSession | undefined): string {
+  if (!session) return text;
+  const secrets = new Set<string>([session.cookie, session.proxy]);
+  for (const part of session.cookie.split(";")) {
+    const value = part.slice(part.indexOf("=") + 1).trim();
+    if (part.includes("=") && value.length >= 6) secrets.add(value);
+  }
+  try {
+    const url = new URL(session.proxy);
+    if (url.password) {
+      secrets.add(url.password);
+      secrets.add(decodeURIComponent(url.password));
+    }
+    if (url.username.length >= 3) {
+      secrets.add(url.username);
+      secrets.add(decodeURIComponent(url.username));
+    }
+  } catch {
+    // validated at startup
+  }
+  if (session.chatPasscode && session.chatPasscode.length >= 4) secrets.add(session.chatPasscode);
+  let out = text;
+  for (const s of [...secrets].filter(Boolean).sort((a, b) => b.length - a.length)) {
+    out = out.split(s).join("[REDACTED]");
+  }
+  return out;
 }
 
 export type QueryValue = string | number | boolean | undefined;
@@ -91,13 +163,15 @@ export class TwittrApiError extends Error {
 }
 
 /**
- * Reads auth config and the response format from environment variables (stdio mode). Throws on an
- * invalid TWITTRAPI_RESPONSE_FORMAT, or an invalid RAPIDAPI_HOST in RapidAPI mode.
+ * Reads auth config, the response format and the optional X session from environment variables
+ * (stdio mode). Throws on an invalid TWITTRAPI_RESPONSE_FORMAT, an invalid RAPIDAPI_HOST in RapidAPI
+ * mode, or an invalid TWITTRAPI_X_COOKIE / TWITTRAPI_X_PROXY.
  */
 export function configFromEnv(env: NodeJS.ProcessEnv = process.env): ClientConfig {
   const baseUrl = env.TWITTRAPI_BASE_URL?.trim() || DEFAULT_BASE_URL;
   const format = parseResponseFormat(env.TWITTRAPI_RESPONSE_FORMAT);
-  const extra = format ? { format } : {};
+  const xSession = xSessionFromEnv(env);
+  const extra = { ...(format ? { format } : {}), ...(xSession ? { xSession } : {}) };
   const direct = env.TWITTRAPI_API_KEY?.trim();
   if (direct) return { mode: "direct", apiKey: direct, baseUrl, ...extra };
   const rapid = env.RAPIDAPI_KEY?.trim();
@@ -208,6 +282,15 @@ export class TwittrApiClient {
   }
 
   async get(req: ApiRequest): Promise<ApiResponse> {
+    return this.request("GET", req);
+  }
+
+  /** POST with a JSON body (the account-action endpoints). */
+  async post(req: ApiRequest, body: Record<string, unknown>): Promise<ApiResponse> {
+    return this.request("POST", req, body);
+  }
+
+  private async request(method: "GET" | "POST", req: ApiRequest, body?: Record<string, unknown>): Promise<ApiResponse> {
     if (!this.config.apiKey) {
       throw new TwittrApiError(
         "No API key configured. Set TWITTRAPI_API_KEY (direct API) or RAPIDAPI_KEY (RapidAPI) in the MCP server's environment, or send an X-API-KEY header in HTTP mode.",
@@ -216,9 +299,12 @@ export class TwittrApiClient {
     const url = buildUrl(this.baseUrl, req);
     let res: Response;
     try {
+      const headers = buildHeaders(this.config);
+      if (body !== undefined) headers["Content-Type"] = "application/json";
       res = await this.fetchImpl(url, {
-        method: "GET",
-        headers: buildHeaders(this.config),
+        method,
+        headers,
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
         signal: AbortSignal.timeout(this.config.timeoutMs ?? DEFAULT_TIMEOUT_MS),
       });
     } catch (err) {

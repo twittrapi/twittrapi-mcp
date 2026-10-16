@@ -6,12 +6,15 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ACTIONS } from "../src/actions.js";
 import { ENDPOINTS } from "../src/endpoints.js";
 import { startHttpServer } from "../src/http.js";
 
 interface Seen {
   url: string;
   headers: IncomingHttpHeaders;
+  method?: string;
+  body?: string;
 }
 
 const seen: Seen[] = [];
@@ -36,9 +39,15 @@ const simpleUserBody = simpleFixture("user-by-username-username");
 const simpleTimelineBody = simpleFixture("user-userid-tweets") as { nextCursor: string };
 
 beforeAll(async () => {
-  mock = createServer((req, res) => {
-    seen.push({ url: req.url ?? "", headers: req.headers });
+  mock = createServer(async (req, res) => {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    seen.push({ url: req.url ?? "", headers: req.headers, method: req.method, body });
     const url = new URL(req.url ?? "/", "http://mock");
+    if (req.method === "POST" && url.pathname === "/client/like") {
+      res.setHeader("content-type", "application/json");
+      return res.end(JSON.stringify({ data: { success: true } }));
+    }
     const isSimple = url.searchParams.get("format") === "simple";
     res.setHeader("content-type", "application/json");
     if (url.pathname === "/user/by/username/jack") return res.end(JSON.stringify(isSimple ? simpleUserBody : userBody));
@@ -166,6 +175,68 @@ describe("stdio server with TWITTRAPI_RESPONSE_FORMAT=raw", () => {
       expect(seen.at(-1)!.url).toBe("/user/by/username/jack?format=simple");
     } finally {
       await client.close();
+    }
+  });
+});
+
+describe("stdio server with an X session", () => {
+  const COOKIE = "auth_token=stdiotoken123456; ct0=stdioct0abcdef; twid=u%3D12";
+  const PROXY = "http://puser:ppass98765@127.0.0.1:9";
+  let client: Client;
+  let stderr = "";
+
+  beforeAll(async () => {
+    const entry = fileURLToPath(new URL("../dist/index.js", import.meta.url));
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [entry],
+      env: {
+        PATH: process.env.PATH ?? "",
+        TWITTRAPI_API_KEY: "stdio-key",
+        TWITTRAPI_BASE_URL: mockUrl,
+        TWITTRAPI_X_COOKIE: COOKIE,
+        TWITTRAPI_X_PROXY: PROXY,
+      },
+      stderr: "pipe",
+    });
+    transport.stderr?.on("data", (d: Buffer) => (stderr += d.toString()));
+    client = new Client({ name: "test", version: "0.0.0" });
+    await client.connect(transport);
+  });
+
+  afterAll(async () => {
+    await client?.close();
+  });
+
+  it("adds the account tools with write annotations and no session arguments", async () => {
+    const { tools } = await client.listTools();
+    const names = tools.map((t) => t.name);
+    expect(names).toEqual(expect.arrayContaining(["create_tweet", "like_tweet", "delete_tweet", "follow_user", "list_drafts"]));
+    expect(names).not.toContain("send_dm"); // needs TWITTRAPI_X_CHAT_PASSCODE
+    expect(tools.length).toBe(ENDPOINTS.length + ACTIONS.length - 1);
+    const del = tools.find((t) => t.name === "delete_tweet")!;
+    expect(del.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: true });
+    const like = tools.find((t) => t.name === "like_tweet")!;
+    expect(like.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false });
+    expect(tools.find((t) => t.name === "list_drafts")!.annotations?.readOnlyHint).toBe(true);
+    for (const t of tools) {
+      expect(Object.keys(t.inputSchema.properties ?? {}), t.name).not.toEqual(expect.arrayContaining(["cookie"]));
+      expect(Object.keys(t.inputSchema.properties ?? {}), t.name).not.toEqual(expect.arrayContaining(["proxy"]));
+    }
+  });
+
+  it("POSTs the session from the environment and keeps it out of output and logs", async () => {
+    seen.length = 0;
+    const result = await client.callTool({ name: "like_tweet", arguments: { tweetId: "20" } });
+    expect(result.isError).toBeFalsy();
+    expect(JSON.parse(text(result))).toEqual({ data: { success: true } });
+    expect(seen[0].method).toBe("POST");
+    expect(seen[0].url).toBe("/client/like?format=simple");
+    expect(JSON.parse(seen[0].body!)).toEqual({ tweet_id: "20", cookie: COOKIE, proxy: PROXY });
+    expect(stderr).toMatch(/account tools enabled/);
+    for (const secret of ["stdiotoken123456", "stdioct0abcdef", "ppass98765"]) {
+      expect(stderr).not.toContain(secret);
+      expect(text(result)).not.toContain(secret);
     }
   });
 });

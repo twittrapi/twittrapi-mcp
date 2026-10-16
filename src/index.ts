@@ -26,6 +26,11 @@ Environment (stdio mode):
                         simple (default): compact JSON, far fewer tokens.
                         raw: X's full GraphQL JSON. Tools also take a format argument.
                         Read in both stdio and HTTP mode.
+  TWITTRAPI_X_COOKIE    Cookie of your own logged-in x.com session (auth_token, ct0, twid).
+  TWITTRAPI_X_PROXY     Your proxy, http://user:pass@host:port. With both set, the account
+                        tools (post, like, follow, DMs, lists, drafts) are added. Stdio only.
+  TWITTRAPI_X_CHAT_PASSCODE
+                        Optional X Chat passcode: adds send_dm and message text in the inbox.
   PORT, HOST            Defaults for --port and --host in HTTP mode
 
 Environment (HTTP mode, hosted deployments; see README "Hosted MCP server"):
@@ -133,6 +138,10 @@ async function main(): Promise<void> {
     console.error(
       "twittrapi-mcp: no TWITTRAPI_API_KEY or RAPIDAPI_KEY set. Tools will be listed but calls will fail until a key is configured.",
     );
+  }
+  if (config.xSession) {
+    // Only that it is set: the cookie and proxy are never printed.
+    console.error("twittrapi-mcp: X session configured, account tools enabled.");
   }
   const server = createServer(new TwittrApiClient(config));
   await server.connect(new StdioServerTransport());

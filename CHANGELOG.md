@@ -4,6 +4,21 @@ All notable changes to this project are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-10-16
+
+### Added
+
+- Account tools that act on your own X account: `create_tweet` (with quote, poll and reply
+  limit), `reply_to_tweet`, `delete_tweet`, `like_tweet`, `unlike_tweet`, `retweet`, `unretweet`,
+  `bookmark_tweet`, `unbookmark_tweet`, `follow_user`, `unfollow_user`, `list_dm_conversations`,
+  `send_dm`, `create_list`, `add_list_member`, `remove_list_member`, `create_draft` and
+  `list_drafts`. They call the API's `/client` endpoints.
+- `TWITTRAPI_X_COOKIE` and `TWITTRAPI_X_PROXY`: your X session. The account tools are listed only
+  when both are set (stdio only). The cookie and proxy are not tool arguments, are never logged and
+  are removed from any result. See https://twittrapi.com/docs/x-session.
+- `TWITTRAPI_X_CHAT_PASSCODE` (optional): adds `send_dm` and message text in the DM inbox.
+- Write tools carry `readOnlyHint: false`; deletions and undo actions also `destructiveHint: true`.
+
 ## [1.0.0] - 2026-10-15
 
 First stable release: the API is stable and follows semantic versioning.
