@@ -141,21 +141,28 @@ added when you configure your X session.
 | `get_followers` | A user's followers |
 | `get_following` | Accounts a user follows |
 | `get_verified_followers` | A user's verified followers |
+| `get_user_affiliates` | Accounts affiliated with an organization |
+| `get_friendships_batch` | Whether one account follows up to 50 others, and back |
+| `get_user_about_batch` | "About this account" for up to 20 handles |
 | `search_tweets` | Search with X operators; Top, Latest, People, Photos or Videos |
 | `get_tweet` | A tweet and its reply thread |
 | `get_tweet_retweets` | Users who retweeted a tweet |
 | `get_tweet_quotes` | Tweets quoting a tweet |
+| `get_tweet_replies` | Only the replies to a tweet |
+| `get_tweet_thread` | The author's own thread around a tweet |
 | `get_list_details` | List name, owner and counts |
 | `get_list_tweets` | Tweets from a list's members |
 | `get_list_members` | Members of a list |
 | `get_community` | Community details |
+| `get_community_about` | A community's About page: rules, moderators, members |
 | `get_community_tweets` | Tweets in a community |
 | `search_communities` | Find communities by keyword |
 | `get_trends` | Trending topics for a location (WOEID) |
 | `get_trend_locations` | Locations that have trends, with their WOEIDs |
+| `get_space` | An X Space: title, state, host and participants |
 
 The user timeline tools (`get_user_tweets`, `get_followers` and so on) accept either `userId` or
-`username`.
+`username`. The batch tools are billed one call per handle.
 
 ### Account tools
 
@@ -176,6 +183,12 @@ your own X account:
 | `create_list` | Create a list |
 | `add_list_member`, `remove_list_member` | Add or remove a list member |
 | `create_draft`, `list_drafts` | Save a draft, list your drafts |
+| `list_bookmark_folders`, `list_bookmark_folder_tweets` | Your bookmark folders and the tweets in one (X Premium) |
+| `search_bookmarks` | Search your bookmarks |
+| `list_community_memberships` | Communities you are a member of |
+| `list_articles`, `get_article` | Your X Articles, drafts or published, and one article (X Premium) |
+| `create_article`, `update_article` | Save a new article as a draft, change one (X Premium) |
+| `publish_article`, `unpublish_article`, `delete_article` | Publish, unpublish or delete an article (X Premium) |
 
 How to get the cookie and set up a proxy: [twittrapi.com/docs/x-session](https://twittrapi.com/docs/x-session).
 The cookie needs `auth_token` and `ct0`; direct messages also need `twid`.
@@ -206,8 +219,12 @@ for lists, `{"data": {...}}` for single objects). Tweets carry `id`, `url`, `tex
 To get the raw JSON instead (for cards, polls, edit history, community notes and other fields the
 simple format leaves out):
 
-- per call: every tool takes an optional `format` argument, `"simple"` or `"raw"`;
+- per call: the tools take an optional `format` argument, `"simple"` or `"raw"`;
 - for the whole server: set `TWITTRAPI_RESPONSE_FORMAT=raw` (the `format` argument still wins).
+
+A few endpoints have no simple format: `get_space`, `get_community_about`, the batch tools and the
+newer account tools (bookmark folders and search, communities, articles). These tools have no
+`format` argument and always return raw JSON.
 
 ### Output size and pagination
 
@@ -335,8 +352,8 @@ and HTTP against a local mock API, and tests of hosted mode (OAuth challenge and
 introspection and caching, audience check, limits, log redaction) against a fake dashboard.
 
 To add or change a tool, edit `src/endpoints.ts`. Each entry has a name, description, API path and
-zod parameter schemas. Every tool also gets `max_chars` and `format`. An entry can set a `simplify`
-function to reshape the parsed JSON further; none do. Account tools live in `src/actions.ts`.
+zod parameter schemas. Every tool also gets `max_chars`, and `format` unless the entry sets `rawOnly`.
+An entry can set a `simplify` function to reshape the parsed JSON further; none do. Account tools live in `src/actions.ts`.
 
 Try the server interactively with the MCP Inspector:
 

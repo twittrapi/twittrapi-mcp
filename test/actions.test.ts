@@ -12,6 +12,9 @@ const EXPECTED = [
   "create_tweet", "reply_to_tweet", "delete_tweet", "like_tweet", "unlike_tweet", "retweet", "unretweet",
   "bookmark_tweet", "unbookmark_tweet", "follow_user", "unfollow_user", "list_dm_conversations", "send_dm",
   "create_list", "add_list_member", "remove_list_member", "create_draft", "list_drafts",
+  "list_bookmark_folders", "list_bookmark_folder_tweets", "search_bookmarks", "list_community_memberships",
+  "list_articles", "get_article", "create_article", "update_article", "publish_article", "unpublish_article",
+  "delete_article",
 ];
 
 function act(name: string) {
@@ -57,16 +60,37 @@ describe("action table", () => {
   });
 
   it("marks deletions and undo actions destructive, reads read-only", () => {
-    for (const name of ["delete_tweet", "unlike_tweet", "unretweet", "unbookmark_tweet", "unfollow_user", "remove_list_member"]) {
+    for (const name of [
+      "delete_tweet", "unlike_tweet", "unretweet", "unbookmark_tweet", "unfollow_user", "remove_list_member",
+      "unpublish_article", "delete_article",
+    ]) {
       expect(act(name).destructive, name).toBe(true);
       expect(act(name).write, name).toBe(true);
     }
-    for (const name of ["create_tweet", "like_tweet", "follow_user", "send_dm", "create_list", "create_draft"]) {
+    for (const name of [
+      "create_tweet", "like_tweet", "follow_user", "send_dm", "create_list", "create_draft",
+      "create_article", "update_article", "publish_article",
+    ]) {
       expect(act(name).destructive, name).toBe(false);
       expect(act(name).write, name).toBe(true);
     }
     expect(act("list_dm_conversations").write).toBe(false);
     expect(act("list_drafts").write).toBe(false);
+    for (const name of [
+      "list_bookmark_folders", "list_bookmark_folder_tweets", "search_bookmarks", "list_community_memberships",
+      "list_articles", "get_article",
+    ]) {
+      expect(act(name).write, name).toBe(false);
+      expect(act(name).destructive, name).toBe(false);
+    }
+    expect(act("publish_article").idempotent).toBe(false);
+  });
+
+  it("gives the endpoints without a simple format no format argument", () => {
+    const rawOnly = ACTIONS.filter((a) => a.rawOnly).map((a) => a.name);
+    expect(rawOnly.sort()).toEqual(EXPECTED.slice(EXPECTED.indexOf("list_bookmark_folders")).sort());
+    for (const name of rawOnly) expect(Object.keys(actionInputShape(act(name))), name).not.toContain("format");
+    expect(Object.keys(actionInputShape(act("like_tweet")))).toContain("format");
   });
 });
 
@@ -111,6 +135,40 @@ describe("action bodies", () => {
     ["create_draft", { text: "later" }, { text: "later" }],
     ["list_drafts", {}, {}],
     ["list_drafts", { ascending: true }, { ascending: true }],
+    ["list_bookmark_folders", {}, {}],
+    ["list_bookmark_folders", { cursor: "C" }, { cursor: "C" }],
+    ["list_bookmark_folder_tweets", { folderId: "179", cursor: "C" }, { folder_id: "179", cursor: "C" }],
+    ["search_bookmarks", { query: "api", count: 20 }, { query: "api", count: 20 }],
+    ["list_community_memberships", {}, {}],
+    ["list_articles", {}, {}],
+    [
+      "list_articles",
+      { lifecycle: "published", userId: "12", count: 10, cursor: "C" },
+      { lifecycle: "published", user_id: "12", count: 10, cursor: "C" },
+    ],
+    ["get_article", { articleId: "179" }, { article_id: "179" }],
+    ["create_article", {}, {}],
+    ["create_article", { title: "Hello", text: "One\nTwo" }, { title: "Hello", text: "One\nTwo" }],
+    [
+      "create_article",
+      { contentState: { blocks: [], entity_map: [] } },
+      { content_state: { blocks: [], entity_map: [] } },
+    ],
+    ["update_article", { articleId: "179", title: "New" }, { article_id: "179", title: "New" }],
+    [
+      "update_article",
+      { articleId: "179", coverMediaId: "55", coverMediaCategory: "AmplifyVideo" },
+      { article_id: "179", cover_media_id: "55", cover_media_category: "AmplifyVideo" },
+    ],
+    ["update_article", { articleId: "179", removeCover: true }, { article_id: "179", remove_cover: true }],
+    ["publish_article", { articleId: "179" }, { article_id: "179" }],
+    [
+      "publish_article",
+      { articleId: "179", visibility: "subscribers", replyControl: "verified", tweetText: "New article" },
+      { article_id: "179", visibility: "subscribers", reply_control: "verified", tweet_text: "New article" },
+    ],
+    ["unpublish_article", { articleId: "179" }, { article_id: "179" }],
+    ["delete_article", { articleId: "179" }, { article_id: "179" }],
   ])("%s %j", (name, args, expected) => {
     expect(act(name).body(args)).toEqual(expected);
   });
@@ -121,6 +179,13 @@ describe("action bodies", () => {
     expect(() => act("send_dm").body({ text: "x" })).toThrow(/conversationId or userId/);
     expect(() => act("create_tweet").body({ text: "x", pollDurationMinutes: 60 })).toThrow(/pollChoices/);
     expect(() => act("create_tweet").body({ text: "x", pollChoices: ["a", "b"], quoteUrl: "https://x.com/a/status/1" })).toThrow(/poll/);
+    const both = { text: "a", contentState: { blocks: [], entity_map: [] } };
+    expect(() => act("create_article").body(both)).toThrow(/not both/);
+    expect(() => act("update_article").body({ articleId: "1", ...both })).toThrow(/not both/);
+    expect(() => act("update_article").body({ articleId: "1" })).toThrow(/at least one/);
+    expect(() => act("update_article").body({ articleId: "1", removeCover: false })).toThrow(/at least one/);
+    expect(() => act("update_article").body({ articleId: "1", coverMediaId: "5", removeCover: true })).toThrow(/not both/);
+    expect(() => act("update_article").body({ articleId: "1", coverMediaCategory: "DraftTweetGif" })).toThrow(/coverMediaId/);
   });
 
   it("validates arguments with the zod schemas", () => {
@@ -131,6 +196,15 @@ describe("action bodies", () => {
     expect(shape.safeParse({ text: "x", quoteUrl: "https://example.com/a" }).success).toBe(false);
     const like = z.object(actionInputShape(act("like_tweet")));
     expect(like.safeParse({ tweetId: "abc" }).success).toBe(false);
+    const search = z.object(actionInputShape(act("search_bookmarks")));
+    expect(search.safeParse({ query: "x".repeat(500) }).success).toBe(true);
+    expect(search.safeParse({ query: "x".repeat(501) }).success).toBe(false);
+    expect(search.safeParse({ query: "a", count: 101 }).success).toBe(false);
+    const publish = z.object(actionInputShape(act("publish_article")));
+    expect(publish.safeParse({ articleId: "1", tweetText: "x".repeat(257) }).success).toBe(false);
+    expect(publish.safeParse({ articleId: "1", visibility: "friends" }).success).toBe(false);
+    const list = z.object(actionInputShape(act("list_articles")));
+    expect(list.safeParse({ lifecycle: "archived" }).success).toBe(false);
   });
 });
 
@@ -166,6 +240,27 @@ describe("runAction", () => {
     const res = await runAction(client, act("like_tweet"), session, { tweetId: "20", format: "raw" });
     expect(String(fetchMock.mock.calls[0][0])).toBe("https://api.test/client/like");
     expect(JSON.parse(text(res))).toEqual({ status_code: 200, response: { data: { favorite_tweet: "Done" } } });
+  });
+
+  it("raw-only tools send no format=simple, unwrap the wrapper and print the next cursor", async () => {
+    const inner = {
+      data: { timeline: { instructions: [{ entries: [{ entryId: "tweet-1" }, { entryId: "cursor-bottom-1", content: { value: "NEXT" } }] }] } },
+    };
+    const fetchMock = mockFetch(200, { status_code: 200, response: JSON.stringify(inner) });
+    const client = new TwittrApiClient({ mode: "direct", apiKey: "k", baseUrl: "https://api.test", fetch: fetchMock });
+    const res = await runAction(client, act("search_bookmarks"), session, { query: "api", format: "simple" });
+    expect(String(fetchMock.mock.calls[0][0])).toBe("https://api.test/client/bookmarks/search");
+    expect(sentBody(fetchMock)).toEqual({ query: "api", cookie: COOKIE, proxy: PROXY });
+    const out = text(res);
+    expect(out.startsWith("next_cursor: NEXT")).toBe(true);
+    expect(JSON.parse(out.slice(out.indexOf("{")))).toEqual({ status_code: 200, response: inner });
+  });
+
+  it("does not print a cursor for non-paginated raw-only tools", async () => {
+    const fetchMock = mockFetch(200, { status_code: 200, response: '{"data":{}}' });
+    const client = new TwittrApiClient({ mode: "direct", apiKey: "k", fetch: fetchMock });
+    const res = await runAction(client, act("delete_article"), session, { articleId: "179" });
+    expect(JSON.parse(text(res))).toEqual({ status_code: 200, response: { data: {} } });
   });
 
   it("never returns the cookie or proxy, even when the API echoes them", async () => {

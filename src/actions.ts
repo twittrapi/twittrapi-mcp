@@ -17,7 +17,7 @@ export interface ActionDef {
   params: Record<string, z.ZodType>;
   /** Builds the API body fields from validated arguments. Cookie and proxy are added by the server. */
   body: (args: Record<string, unknown>) => Record<string, unknown>;
-  /** False only for the actions that read (DM inbox, drafts). */
+  /** False only for the actions that read (DM inbox, drafts, bookmark folders, articles, ...). */
   write: boolean;
   /** Removes or undoes something (delete, unlike, unfollow, ...). */
   destructive: boolean;
@@ -25,6 +25,10 @@ export interface ActionDef {
   idempotent: boolean;
   /** Needs the X Chat passcode (TWITTRAPI_X_CHAT_PASSCODE); registered only when it is set. */
   needsChatPasscode?: boolean;
+  /** The API has no simple format for this endpoint: no format argument, the raw wrapper is always unwrapped. */
+  rawOnly?: boolean;
+  /** The result is a page with cursors; the next cursor is printed above the JSON. */
+  paginated?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -109,6 +113,65 @@ const listMember = (name: string, title: string, path: string, description: stri
   write: true,
   destructive,
   idempotent: true,
+});
+
+const PREMIUM = "Needs X Premium on the account.";
+
+const pageCursor = z
+  .string()
+  .optional()
+  .describe("Pagination cursor. Leave empty for the first page; pass the next_cursor from a previous result to get the next page.");
+
+const pageCount = (what: string) =>
+  z.number().int().min(1).max(100).optional().describe(`${what} per page, 1 to 100 (default 20). X treats it as a hint.`);
+
+/** count and cursor for the API, only when set. */
+function pageBody(args: Record<string, unknown>): Record<string, unknown> {
+  return {
+    ...(args.count !== undefined ? { count: args.count } : {}),
+    ...(typeof args.cursor === "string" && args.cursor ? { cursor: args.cursor } : {}),
+  };
+}
+
+const articleId = (what: string) => numericId("articleId").describe(`Numeric ID of the article to ${what}, from list_articles.`);
+
+const articleContent = {
+  title: z.string().optional().describe("Title of the article."),
+  text: z.string().optional().describe("Content as plain text, one paragraph per line. Send text or contentState, not both."),
+  contentState: z
+    .object({ blocks: z.array(z.unknown()), entity_map: z.array(z.unknown()) })
+    .optional()
+    .describe('Content in the format of the x.com editor, {"blocks": [...], "entity_map": [...]}, as get_article returns it. Use it for headings, links and styles.'),
+};
+
+/** title, text / content_state for the API, only when set. */
+function articleContentBody(args: Record<string, unknown>): Record<string, unknown> {
+  if (args.text !== undefined && args.contentState !== undefined) throw new Error("Send text or contentState, not both.");
+  return {
+    ...(args.title !== undefined ? { title: args.title } : {}),
+    ...(args.text !== undefined ? { text: args.text } : {}),
+    ...(args.contentState !== undefined ? { content_state: args.contentState } : {}),
+  };
+}
+
+const articleAction = (
+  name: string,
+  title: string,
+  path: string,
+  description: string,
+  what: string,
+  flags: { write: boolean; destructive: boolean },
+): ActionDef => ({
+  name,
+  title,
+  description,
+  path,
+  params: { articleId: articleId(what) },
+  body: (a) => ({ article_id: a.articleId }),
+  write: flags.write,
+  destructive: flags.destructive,
+  idempotent: true,
+  rawOnly: true,
 });
 
 const dmTarget = {
@@ -322,6 +385,194 @@ export const ACTIONS: ActionDef[] = [
     destructive: false,
     idempotent: true,
   },
+
+  // Bookmarks and communities (reads) ---------------------------------------
+  {
+    name: "list_bookmark_folders",
+    title: "List bookmark folders",
+    description: `The user's bookmark folders with their IDs (use one as folderId in list_bookmark_folder_tweets). ${PREMIUM} Returns raw JSON. Paginated.`,
+    path: "/client/bookmarks/folders",
+    params: { cursor: pageCursor },
+    body: pageBody,
+    write: false,
+    destructive: false,
+    idempotent: true,
+    rawOnly: true,
+    paginated: true,
+  },
+  {
+    name: "list_bookmark_folder_tweets",
+    title: "List tweets in a bookmark folder",
+    description: `The tweets in one of the user's bookmark folders. ${PREMIUM} Returns raw JSON. Paginated.`,
+    path: "/client/bookmarks/folder",
+    params: {
+      folderId: numericId("folderId").describe("Numeric ID of the folder, from list_bookmark_folders."),
+      cursor: pageCursor,
+    },
+    body: (a) => ({ folder_id: a.folderId, ...pageBody(a) }),
+    write: false,
+    destructive: false,
+    idempotent: true,
+    rawOnly: true,
+    paginated: true,
+  },
+  {
+    name: "search_bookmarks",
+    title: "Search bookmarks",
+    description: "Search the tweets in the user's bookmarks. Returns raw JSON. Paginated.",
+    path: "/client/bookmarks/search",
+    params: {
+      query: z
+        .string()
+        .min(1)
+        .max(500)
+        .refine((s) => s.trim().length > 0, "query must not be empty")
+        .describe("Search text, up to 500 characters."),
+      count: pageCount("Tweets"),
+      cursor: pageCursor,
+    },
+    body: (a) => ({ query: a.query, ...pageBody(a) }),
+    write: false,
+    destructive: false,
+    idempotent: true,
+    rawOnly: true,
+    paginated: true,
+  },
+  {
+    name: "list_community_memberships",
+    title: "List your communities",
+    description: "The X Communities the user's account is a member of. Returns raw JSON. Paginated.",
+    path: "/client/communities/memberships",
+    params: { cursor: pageCursor },
+    body: pageBody,
+    write: false,
+    destructive: false,
+    idempotent: true,
+    rawOnly: true,
+    paginated: true,
+  },
+
+  // Articles ----------------------------------------------------------------
+  {
+    name: "list_articles",
+    title: "List articles",
+    description: `The user's X Articles (long-form posts): drafts by default, or the published ones. Returns their IDs for the other article tools. ${PREMIUM} Returns raw JSON. Paginated.`,
+    path: "/client/articles",
+    params: {
+      lifecycle: z.enum(["draft", "published"]).optional().describe("draft (default) or published."),
+      userId: numericId("userId")
+        .optional()
+        .describe("The user's own numeric ID. Only needed when the cookie has no twid."),
+      count: pageCount("Articles"),
+      cursor: pageCursor,
+    },
+    body: (a) => ({
+      ...(a.lifecycle !== undefined ? { lifecycle: a.lifecycle } : {}),
+      ...(a.userId !== undefined ? { user_id: a.userId } : {}),
+      ...pageBody(a),
+    }),
+    write: false,
+    destructive: false,
+    idempotent: true,
+    rawOnly: true,
+    paginated: true,
+  },
+  articleAction(
+    "get_article",
+    "Read an article",
+    "/client/articles/get",
+    `One of the user's articles with its title, content (content_state), cover and state. ${PREMIUM} Returns raw JSON.`,
+    "read",
+    { write: false, destructive: false },
+  ),
+  {
+    name: "create_article",
+    title: "Create an article",
+    description: `Save a new X Article as a draft (not published). All fields are optional. ${PREMIUM}`,
+    path: "/client/articles/create",
+    params: { ...articleContent },
+    body: articleContentBody,
+    write: true,
+    destructive: false,
+    idempotent: false,
+    rawOnly: true,
+  },
+  {
+    name: "update_article",
+    title: "Update an article",
+    description: `Change the title, content or cover of one of the user's articles. Fields left out stay as they are; text or contentState replaces the whole content. ${PREMIUM}`,
+    path: "/client/articles/update",
+    params: {
+      articleId: articleId("change"),
+      ...articleContent,
+      coverMediaId: numericId("coverMediaId").optional().describe("Numeric media ID of an uploaded image or video to use as the cover."),
+      coverMediaCategory: z
+        .enum(["DraftTweetImage", "DraftTweetGif", "AmplifyVideo"])
+        .optional()
+        .describe("Type of the cover: DraftTweetImage (default), DraftTweetGif or AmplifyVideo (video)."),
+      removeCover: z.boolean().optional().describe("true removes the cover. Not together with coverMediaId."),
+    },
+    body: (a) => {
+      if (a.coverMediaId !== undefined && a.removeCover === true) throw new Error("Send coverMediaId or removeCover, not both.");
+      if (a.coverMediaCategory !== undefined && a.coverMediaId === undefined) throw new Error("coverMediaCategory needs coverMediaId.");
+      const content = articleContentBody(a);
+      if (Object.keys(content).length === 0 && a.coverMediaId === undefined && a.removeCover !== true) {
+        throw new Error("Provide at least one of title, text, contentState, coverMediaId or removeCover.");
+      }
+      return {
+        article_id: a.articleId,
+        ...content,
+        ...(a.coverMediaId !== undefined ? { cover_media_id: a.coverMediaId } : {}),
+        ...(a.coverMediaCategory !== undefined ? { cover_media_category: a.coverMediaCategory } : {}),
+        ...(a.removeCover !== undefined ? { remove_cover: a.removeCover } : {}),
+      };
+    },
+    write: true,
+    destructive: false,
+    idempotent: true,
+    rawOnly: true,
+  },
+  {
+    name: "publish_article",
+    title: "Publish an article",
+    description: `Publish a draft article as a post on the user's X account. Only call this when the user asked to publish this article. ${PREMIUM}`,
+    path: "/client/articles/publish",
+    params: {
+      articleId: articleId("publish"),
+      visibility: z.enum(["public", "subscribers"]).optional().describe("public (default), or subscribers for the user's subscribers only."),
+      replyControl: z
+        .enum(["all", "community", "verified", "byinvitation"])
+        .optional()
+        .describe("Who can reply: all (default), community, verified or byinvitation. Ignored for subscribers-only articles."),
+      tweetText: z.string().max(256).optional().describe("Text of the post that shares the article, up to 256 characters."),
+    },
+    body: (a) => ({
+      article_id: a.articleId,
+      ...(a.visibility !== undefined ? { visibility: a.visibility } : {}),
+      ...(a.replyControl !== undefined ? { reply_control: a.replyControl } : {}),
+      ...(a.tweetText !== undefined ? { tweet_text: a.tweetText } : {}),
+    }),
+    write: true,
+    destructive: false,
+    idempotent: false,
+    rawOnly: true,
+  },
+  articleAction(
+    "unpublish_article",
+    "Unpublish an article",
+    "/client/articles/unpublish",
+    `Turn one of the user's published articles back into a draft. ${PREMIUM}`,
+    "unpublish",
+    { write: true, destructive: true },
+  ),
+  articleAction(
+    "delete_article",
+    "Delete an article",
+    "/client/articles/delete",
+    `Delete one of the user's articles. This cannot be undone. ${PREMIUM}`,
+    "delete",
+    { write: true, destructive: true },
+  ),
 ];
 
 export function getAction(name: string): ActionDef | undefined {

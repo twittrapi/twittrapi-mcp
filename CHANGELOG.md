@@ -4,6 +4,25 @@ All notable changes to this project are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-10-19
+
+### Added
+
+- Read tools: `get_tweet_replies` (only the replies, with `rankingMode` and
+  `includePromotedContent`), `get_tweet_thread` (the author's own thread), `get_user_affiliates`,
+  `get_community_about`, `get_space`, `get_friendships_batch` (one account against up to 50) and
+  `get_user_about_batch` (up to 20 handles). The two batch tools are billed one call per handle.
+- Account tools: `list_bookmark_folders`, `list_bookmark_folder_tweets`, `search_bookmarks`,
+  `list_community_memberships`, and X Articles: `list_articles`, `get_article`, `create_article`,
+  `update_article`, `publish_article`, `unpublish_article` and `delete_article`. Bookmark folders
+  and articles need X Premium.
+- Paginated account tools print `next_cursor` above the JSON, like the read tools.
+
+### Changed
+
+- Tools for endpoints without a simple format (`get_space`, `get_community_about`, the batch
+  tools and the new account tools) have no `format` argument and always return raw JSON.
+
 ## [1.1.0] - 2026-10-16
 
 ### Added

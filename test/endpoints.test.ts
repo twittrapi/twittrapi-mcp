@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { TwittrApiClient } from "../src/client.js";
 import { ENDPOINTS, getEndpoint } from "../src/endpoints.js";
-import { buildRequest, runEndpoint } from "../src/server.js";
+import { buildRequest, inputShape, runEndpoint } from "../src/server.js";
 import { VERSION } from "../src/version.js";
 
 const EXPECTED = [
@@ -11,6 +11,8 @@ const EXPECTED = [
   "search_tweets", "get_tweet", "get_tweet_retweets", "get_tweet_quotes",
   "get_list_details", "get_list_tweets", "get_list_members", "get_community", "get_community_tweets",
   "search_communities", "get_trends", "get_trend_locations",
+  "get_user_affiliates", "get_friendships_batch", "get_user_about_batch", "get_tweet_replies", "get_tweet_thread",
+  "get_community_about", "get_space",
 ];
 
 function ep(name: string) {
@@ -64,6 +66,24 @@ describe("buildRequest", () => {
     ["search_communities", { searchTerm: "ai art/x" }, "/communities/search/ai%20art%2Fx", {}],
     ["get_trends", { locationId: "1" }, "/trends/1", {}],
     ["get_trend_locations", {}, "/misc/locations", {}],
+    ["get_user_affiliates", { userId: "12", count: 50, cursor: "C" }, "/user/12/affiliates", { count: 50, cursor: "C" }],
+    ["get_user_affiliates", { username: "@XDevelopers" }, "/user/-1/affiliates", { username: "XDevelopers" }],
+    [
+      "get_friendships_batch",
+      { sourceUsername: "@jack", targetUsernames: ["XDevelopers", " @TwitterDev"] },
+      "/user/friendships/batch",
+      { source_screen_name: "jack", target_screen_names: "XDevelopers,TwitterDev" },
+    ],
+    ["get_user_about_batch", { usernames: ["jack", "@NASA"] }, "/user/about/batch", { usernames: "jack,NASA" }],
+    [
+      "get_tweet_replies",
+      { tweetId: "20", rankingMode: "Likes", includePromotedContent: true, cursor: "C" },
+      "/tweet/20/replies",
+      { rankingMode: "Likes", includePromotedContent: true, cursor: "C" },
+    ],
+    ["get_tweet_thread", { tweetId: "20" }, "/tweet/20/thread", {}],
+    ["get_community_about", { communityId: "7" }, "/communities/7/about", {}],
+    ["get_space", { spaceId: "1YqKDqWqdPLsV" }, "/spaces/1YqKDqWqdPLsV", {}],
   ])("%s %j -> %s", (name, args, path, query) => {
     const req = buildRequest(ep(name), args);
     expect(req.path).toBe(path);
@@ -78,6 +98,41 @@ describe("buildRequest", () => {
     expect(schema.safeParse(Array.from({ length: 500 }, (_, i) => String(i))).success).toBe(true);
     expect(schema.safeParse(["1"]).success).toBe(true);
     expect(schema.safeParse(["abc"]).success).toBe(false);
+  });
+  it("limits the batch handle lists and checks each handle", () => {
+    const targets = ep("get_friendships_batch").params.targetUsernames.schema;
+    expect(targets.safeParse(Array.from({ length: 50 }, (_, i) => `u${i}`)).success).toBe(true);
+    expect(targets.safeParse(Array.from({ length: 51 }, (_, i) => `u${i}`)).success).toBe(false);
+    expect(targets.safeParse([]).success).toBe(false);
+    expect(targets.safeParse(["bad-name"]).success).toBe(false);
+    const usernames = ep("get_user_about_batch").params.usernames.schema;
+    expect(usernames.safeParse(Array.from({ length: 20 }, (_, i) => `u${i}`)).success).toBe(true);
+    expect(usernames.safeParse(Array.from({ length: 21 }, (_, i) => `u${i}`)).success).toBe(false);
+    expect(usernames.safeParse(["@jack"]).success).toBe(true);
+  });
+  it("accepts only letters and digits as a Space ID", () => {
+    const schema = ep("get_space").params.spaceId.schema;
+    expect(schema.safeParse("1YqKDqWqdPLsV").success).toBe(true);
+    expect(schema.safeParse("1YqK-DqW").success).toBe(false);
+    expect(schema.safeParse("a".repeat(33)).success).toBe(false);
+  });
+});
+
+describe("raw-only endpoints", () => {
+  const RAW_ONLY = ["get_friendships_batch", "get_user_about_batch", "get_community_about", "get_space"];
+  it("are exactly the endpoints without a simple format, and have no format argument", () => {
+    expect(ENDPOINTS.filter((e) => e.rawOnly).map((e) => e.name).sort()).toEqual([...RAW_ONLY].sort());
+    for (const name of RAW_ONLY) expect(Object.keys(inputShape(ep(name))), name).not.toContain("format");
+    expect(Object.keys(inputShape(ep("get_tweet_replies")))).toContain("format");
+  });
+  it("never send format=simple", async () => {
+    const f = vi.fn(async (_url: string | URL | Request) => new Response(JSON.stringify({ data: {} }), { status: 200 }));
+    const client = new TwittrApiClient({ mode: "direct", apiKey: "k", baseUrl: "https://api.test", fetch: f });
+    const res = await runEndpoint(client, ep("get_space"), { spaceId: "1YqKDqWqdPLsV", format: "simple" });
+    expect(res.isError).toBeFalsy();
+    expect(String(f.mock.calls[0][0])).toBe("https://api.test/spaces/1YqKDqWqdPLsV");
+    await runEndpoint(client, ep("get_tweet_thread"), { tweetId: "20" });
+    expect(String(f.mock.calls[1][0])).toBe("https://api.test/tweet/20/thread?format=simple");
   });
 });
 

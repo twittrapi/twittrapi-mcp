@@ -29,6 +29,7 @@ ${formatLine}
 Output is cut at max_chars (default ${DEFAULT_MAX_CHARS}).
 Most user tools accept userId or username; resolve a handle once with username_to_id and reuse the ID.
 Paginated tools print next_cursor at the top of the result; pass it back as cursor for the next page.
+Tools without a format argument always return raw JSON.
 A 402 error means the account has no balance: stop and tell the user. Every call is billed.${
     withActions
       ? `
@@ -58,13 +59,19 @@ function formatSchema(defaultFormat: ResponseFormat) {
     );
 }
 
-/** Builds the zod input shape for a tool: its endpoint params plus max_chars and format. */
+/** Builds the zod input shape for a tool: its endpoint params plus max_chars and (unless raw only) format. */
 export function inputShape(def: EndpointDef, defaultFormat: ResponseFormat = DEFAULT_FORMAT): Record<string, z.ZodType> {
   const shape: Record<string, z.ZodType> = {};
   for (const [name, p] of Object.entries(def.params)) shape[name] = p.schema;
   shape.max_chars = maxCharsSchema;
-  shape.format = formatSchema(defaultFormat);
+  if (!def.rawOnly) shape.format = formatSchema(defaultFormat);
   return shape;
+}
+
+/** The format to request: raw-only tools are always raw, otherwise the argument or the server default. */
+function pickFormat(client: TwittrApiClient, rawOnly: boolean | undefined, format: unknown): ResponseFormat {
+  if (rawOnly) return "raw";
+  return format === "raw" || format === "simple" ? format : (client.config.format ?? DEFAULT_FORMAT);
 }
 
 /** Turns validated tool arguments into a request (path filled in, query collected). */
@@ -95,7 +102,7 @@ export async function runEndpoint(
 ): Promise<CallToolResult> {
   try {
     const { max_chars, format, ...apiArgs } = args;
-    const fmt = format === "raw" || format === "simple" ? format : (client.config.format ?? DEFAULT_FORMAT);
+    const fmt = pickFormat(client, def.rawOnly, format);
     const req = buildRequest(def, apiArgs);
     if (fmt === "simple") req.query = { ...req.query, format: "simple" };
     const res = await client.get(req);
@@ -117,8 +124,9 @@ export async function runEndpoint(
   }
 }
 
-/** Input shape of an account tool: its own params plus max_chars and format. Never cookie or proxy. */
+/** Input shape of an account tool: its own params plus max_chars and (unless raw only) format. Never cookie or proxy. */
 export function actionInputShape(def: ActionDef, defaultFormat: ResponseFormat = DEFAULT_FORMAT): Record<string, z.ZodType> {
+  if (def.rawOnly) return { ...def.params, max_chars: maxCharsSchema };
   return { ...def.params, max_chars: maxCharsSchema, format: formatSchema(defaultFormat) };
 }
 
@@ -146,14 +154,15 @@ export async function runAction(
 ): Promise<CallToolResult> {
   try {
     const { max_chars, format, ...toolArgs } = args;
-    const fmt = format === "raw" || format === "simple" ? format : (client.config.format ?? DEFAULT_FORMAT);
+    const fmt = pickFormat(client, def.rawOnly, format);
     const body: Record<string, unknown> = { ...def.body(toolArgs), cookie: session.cookie, proxy: session.proxy };
     if (def.path.startsWith("/client/dm/") && session.chatPasscode) body.passcode = session.chatPasscode;
     const req: ApiRequest = { path: def.path, query: fmt === "simple" ? { format: "simple" } : {} };
     const res = await client.post(req, body);
     const text = formatResult(fmt === "raw" ? unwrapClientResponse(res.data) : res.data, {
       maxChars: typeof max_chars === "number" ? max_chars : DEFAULT_MAX_CHARS,
-      paginated: false,
+      paginated: def.paginated ?? false,
+      requestCursor: typeof toolArgs.cursor === "string" ? toolArgs.cursor : undefined,
     });
     return { content: [{ type: "text", text: scrubSession(text, session) }] };
   } catch (err) {
