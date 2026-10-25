@@ -8,7 +8,7 @@ import { VERSION } from "../src/version.js";
 const EXPECTED = [
   "get_user_by_username", "get_user_by_id", "username_to_id", "users_by_ids", "get_user_tweets",
   "get_user_tweets_and_replies", "get_user_media", "get_followers", "get_following", "get_verified_followers",
-  "search_tweets", "get_tweet", "get_tweet_retweets", "get_tweet_quotes",
+  "search_tweets", "get_tweet", "tweets_by_ids", "get_tweet_retweets", "get_tweet_quotes",
   "get_list_details", "get_list_tweets", "get_list_members", "get_community", "get_community_tweets",
   "search_communities", "get_trends", "get_trend_locations",
   "get_user_affiliates", "get_friendships_batch", "get_user_about_batch", "get_tweet_replies", "get_tweet_thread",
@@ -56,6 +56,7 @@ describe("buildRequest", () => {
     ["get_verified_followers", { userId: "12" }, "/user/12/verifiedFollowers", {}],
     ["search_tweets", { searchItem: "from:jack", category: "Latest", count: 10 }, "/search", { searchItem: "from:jack", category: "Latest", count: 10 }],
     ["get_tweet", { tweetId: "99", rankingMode: "Recency" }, "/tweet/99", { rankingMode: "Recency" }],
+    ["tweets_by_ids", { ids: ["20", "1585841080431321088"] }, "/tweet/tweets/by/ids", { ids: "20,1585841080431321088" }],
     ["get_tweet_retweets", { tweetId: "99" }, "/tweet/99/retweets", {}],
     ["get_tweet_quotes", { tweetId: "99" }, "/tweet/99/quotes", {}],
     ["get_list_details", { listId: "5" }, "/lists/details", { listId: "5" }],
@@ -98,6 +99,14 @@ describe("buildRequest", () => {
     expect(schema.safeParse(Array.from({ length: 500 }, (_, i) => String(i))).success).toBe(true);
     expect(schema.safeParse(["1"]).success).toBe(true);
     expect(schema.safeParse(["abc"]).success).toBe(false);
+  });
+  it("rejects more than 100 tweet ids at the schema level", () => {
+    const schema = ep("tweets_by_ids").params.ids.schema;
+    expect(schema.safeParse(Array.from({ length: 101 }, (_, i) => String(i))).success).toBe(false);
+    expect(schema.safeParse(Array.from({ length: 100 }, (_, i) => String(i))).success).toBe(true);
+    expect(schema.safeParse([]).success).toBe(false);
+    expect(schema.safeParse(["20"]).success).toBe(true);
+    expect(schema.safeParse(["20", "12a"]).success).toBe(false);
   });
   it("limits the batch handle lists and checks each handle", () => {
     const targets = ep("get_friendships_batch").params.targetUsernames.schema;

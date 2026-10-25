@@ -146,6 +146,7 @@ added when you configure your X session.
 | `get_user_about_batch` | "About this account" for up to 20 handles |
 | `search_tweets` | Search with X operators; Top, Latest, People, Photos or Videos |
 | `get_tweet` | A tweet and its reply thread |
+| `tweets_by_ids` | Up to 100 tweets by ID at once |
 | `get_tweet_retweets` | Users who retweeted a tweet |
 | `get_tweet_quotes` | Tweets quoting a tweet |
 | `get_tweet_replies` | Only the replies to a tweet |
@@ -162,7 +163,8 @@ added when you configure your X session.
 | `get_space` | An X Space: title, state, host and participants |
 
 The user timeline tools (`get_user_tweets`, `get_followers` and so on) accept either `userId` or
-`username`. The batch tools are billed one call per handle.
+`username`. The batch tools are billed one call per handle; `tweets_by_ids` is one call however
+many IDs.
 
 ### Account tools
 

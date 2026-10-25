@@ -131,6 +131,25 @@ describe("simple results", () => {
     expect(await run(client, "get_trends", { locationId: "1" })).toBe(JSON.stringify(body));
   });
 
+  it("tweets_by_ids returns the found tweets in request order, without a cursor header", async () => {
+    const body = simple("tweet-tweets-by-ids");
+    const { client, url } = setup(body);
+    const text = await run(client, "tweets_by_ids", { ids: ["2019881223666233717", "20", "1"] });
+    expect(url().pathname).toBe("/tweet/tweets/by/ids");
+    expect(url().searchParams.get("ids")).toBe("2019881223666233717,20,1");
+    expect(url().searchParams.get("format")).toBe("simple");
+    expect(text).toBe(JSON.stringify(body));
+    expect(JSON.parse(text).data.map((t: { id: string }) => t.id)).toEqual(["2019881223666233717", "20"]);
+  });
+
+  it("tweets_by_ids in the raw format keeps an empty object for an ID without a tweet", async () => {
+    const body = { data: { tweetResult: [{ result: { __typename: "Tweet", rest_id: "20" } }, {}] } };
+    const { client, url } = setup(body);
+    const text = await run(client, "tweets_by_ids", { ids: ["20", "1"], format: "raw" });
+    expect(url().searchParams.has("format")).toBe(false);
+    expect(JSON.parse(text).data.tweetResult).toEqual(body.data.tweetResult);
+  });
+
   it("slice-based pages (community search) use nextCursor too", async () => {
     const body = simple("communities-search-searchterm");
     const { client } = setup(body);

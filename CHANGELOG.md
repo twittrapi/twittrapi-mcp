@@ -4,6 +4,14 @@ All notable changes to this project are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Read tool `tweets_by_ids`: up to 100 tweets by numeric ID in one call, billed as one call.
+  Results keep the request order; in the simple format tweets that were deleted or never existed
+  are left out, in the raw format they are an empty `{}`.
+
 ## [1.2.0] - 2026-10-19
 
 ### Added

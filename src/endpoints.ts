@@ -319,6 +319,25 @@ export const ENDPOINTS: EndpointDef[] = [
     paginated: true,
   },
   {
+    name: "tweets_by_ids",
+    title: "Get tweets by IDs",
+    description:
+      "Get up to 100 tweets in one call by numeric tweet ID, billed as one call. Results keep the request order; tweets that were deleted or never existed are left out (raw format: an empty {} in their place).",
+    path: "/tweet/tweets/by/ids",
+    params: {
+      ids: {
+        in: "query",
+        schema: z
+          .array(numericId("Each id"))
+          .min(1)
+          .max(100)
+          .describe("Numeric tweet IDs, 1 to 100."),
+        serialize: (v) => (v as string[]).join(","),
+      },
+    },
+    paginated: false,
+  },
+  {
     name: "get_tweet_retweets",
     title: "Get tweet retweeters",
     description: "Get the users who retweeted a tweet. Paginated.",
