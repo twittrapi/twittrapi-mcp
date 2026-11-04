@@ -212,8 +212,11 @@ describe("stdio server with an X session", () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name);
     expect(names).toEqual(expect.arrayContaining(["create_tweet", "like_tweet", "delete_tweet", "follow_user", "list_drafts"]));
-    expect(names).not.toContain("send_dm"); // needs TWITTRAPI_X_CHAT_PASSCODE
-    expect(tools.length).toBe(ENDPOINTS.length + ACTIONS.length - 1);
+    // These need TWITTRAPI_X_CHAT_PASSCODE.
+    const needPasscode = ["send_dm", "accept_dm_request", "decline_dm_request"];
+    for (const name of needPasscode) expect(names).not.toContain(name);
+    expect(names).toContain("list_dm_requests");
+    expect(tools.length).toBe(ENDPOINTS.length + ACTIONS.length - needPasscode.length);
     const del = tools.find((t) => t.name === "delete_tweet")!;
     expect(del.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: true });
     const like = tools.find((t) => t.name === "like_tweet")!;

@@ -70,7 +70,7 @@
         },
         {
           "name": "TWITTRAPI_X_CHAT_PASSCODE",
-          "description": "Your X Chat passcode. Adds send_dm and message text in the DM inbox.",
+          "description": "Your X Chat passcode. Adds send_dm, accept_dm_request, decline_dm_request and message text in the DM inbox.",
           "isRequired": false,
           "isSecret": true
         }

@@ -183,6 +183,17 @@ const dmTarget = {
   userId: numericId("userId").optional().describe("Numeric ID of the other person, for a one-to-one chat."),
 };
 
+const dmRequestTarget = {
+  conversationId: dmTarget.conversationId.describe("Conversation ID from list_dm_requests. Provide this or userId."),
+  userId: numericId("userId").optional().describe("Numeric ID of the person who sent the request."),
+};
+
+/** conversation_id (preferred) or user_id for the API; throws when neither is set. */
+function dmRequestBody(args: Record<string, unknown>): Record<string, unknown> {
+  if (!args.conversationId && !args.userId) throw new Error("Provide either conversationId or userId.");
+  return args.conversationId ? { conversation_id: args.conversationId } : { user_id: args.userId };
+}
+
 // ---------------------------------------------------------------------------
 // Action table
 // ---------------------------------------------------------------------------
@@ -316,6 +327,61 @@ export const ACTIONS: ActionDef[] = [
     write: true,
     destructive: false,
     idempotent: false,
+    needsChatPasscode: true,
+  },
+  {
+    name: "list_dm_requests",
+    title: "List message requests",
+    description:
+      "Pending message requests of the user's X account, with their latest messages. Listing does not accept them or mark them as seen.",
+    path: "/client/dm/requests",
+    params: {
+      folder: z
+        .enum(["you_may_know", "other"])
+        .optional()
+        .describe("you_may_know or other (the Other tab under Requests on X). Default: both."),
+      count: z.number().int().min(1).max(50).optional().describe("Requests per folder, 1 to 50 (default 20)."),
+    },
+    body: (a) => ({
+      ...(a.folder !== undefined ? { folder: a.folder } : {}),
+      ...(a.count !== undefined ? { count: a.count } : {}),
+    }),
+    write: false,
+    destructive: false,
+    idempotent: true,
+  },
+  {
+    name: "accept_dm_request",
+    title: "Accept a message request",
+    description:
+      "Accept a pending one-to-one message request and send the first reply in one call. Only call this when the user asked to accept the request and send this message.",
+    path: "/client/dm/requests/accept",
+    params: {
+      ...dmRequestTarget,
+      text: z
+        .string()
+        .min(1)
+        .max(10_000)
+        .refine((s) => s.trim().length > 0, "text must not be empty")
+        .describe("First reply, up to 10,000 characters."),
+    },
+    body: (a) => ({ ...dmRequestBody(a), text: a.text }),
+    write: true,
+    destructive: false,
+    idempotent: false,
+    needsChatPasscode: true,
+  },
+  {
+    name: "decline_dm_request",
+    title: "Decline a message request",
+    description:
+      "Delete a pending message request from the user's inbox. The sender is not told. Only call this when the user asked to decline this request.",
+    path: "/client/dm/requests/decline",
+    params: { ...dmRequestTarget },
+    body: dmRequestBody,
+    write: true,
+    destructive: true,
+    idempotent: true,
     needsChatPasscode: true,
   },
 

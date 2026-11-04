@@ -30,7 +30,7 @@ Environment (stdio mode):
   TWITTRAPI_X_PROXY     Your proxy, http://user:pass@host:port. With both set, the account
                         tools (post, like, follow, DMs, lists, drafts) are added. Stdio only.
   TWITTRAPI_X_CHAT_PASSCODE
-                        Optional X Chat passcode: adds send_dm and message text in the inbox.
+                        Optional X Chat passcode: adds send_dm, accept_dm_request, decline_dm_request and message text in the inbox.
   PORT, HOST            Defaults for --port and --host in HTTP mode
 
 Environment (HTTP mode, hosted deployments; see README "Hosted MCP server"):

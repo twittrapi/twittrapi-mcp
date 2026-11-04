@@ -11,6 +11,7 @@ const session: XSession = { cookie: COOKIE, proxy: PROXY };
 const EXPECTED = [
   "create_tweet", "reply_to_tweet", "delete_tweet", "like_tweet", "unlike_tweet", "retweet", "unretweet",
   "bookmark_tweet", "unbookmark_tweet", "follow_user", "unfollow_user", "list_dm_conversations", "send_dm",
+  "list_dm_requests", "accept_dm_request", "decline_dm_request",
   "create_list", "add_list_member", "remove_list_member", "create_draft", "list_drafts",
   "list_bookmark_folders", "list_bookmark_folder_tweets", "search_bookmarks", "list_community_memberships",
   "list_articles", "get_article", "create_article", "update_article", "publish_article", "unpublish_article",
@@ -62,19 +63,22 @@ describe("action table", () => {
   it("marks deletions and undo actions destructive, reads read-only", () => {
     for (const name of [
       "delete_tweet", "unlike_tweet", "unretweet", "unbookmark_tweet", "unfollow_user", "remove_list_member",
-      "unpublish_article", "delete_article",
+      "unpublish_article", "delete_article", "decline_dm_request",
     ]) {
       expect(act(name).destructive, name).toBe(true);
       expect(act(name).write, name).toBe(true);
     }
     for (const name of [
       "create_tweet", "like_tweet", "follow_user", "send_dm", "create_list", "create_draft",
-      "create_article", "update_article", "publish_article",
+      "create_article", "update_article", "publish_article", "accept_dm_request",
     ]) {
       expect(act(name).destructive, name).toBe(false);
       expect(act(name).write, name).toBe(true);
     }
     expect(act("list_dm_conversations").write).toBe(false);
+    expect(act("list_dm_requests").write).toBe(false);
+    expect(act("list_dm_requests").destructive).toBe(false);
+    expect(act("accept_dm_request").idempotent).toBe(false);
     expect(act("list_drafts").write).toBe(false);
     for (const name of [
       "list_bookmark_folders", "list_bookmark_folder_tweets", "search_bookmarks", "list_community_memberships",
@@ -128,6 +132,12 @@ describe("action bodies", () => {
     ["list_dm_conversations", { count: 5 }, { count: 5 }],
     ["send_dm", { userId: "12", text: "Hello" }, { user_id: "12", text: "Hello" }],
     ["send_dm", { conversationId: "12:13", userId: "12", text: "Hi" }, { conversation_id: "12:13", text: "Hi" }],
+    ["list_dm_requests", {}, {}],
+    ["list_dm_requests", { folder: "other", count: 5 }, { folder: "other", count: 5 }],
+    ["accept_dm_request", { conversationId: "12-34", text: "Hello" }, { conversation_id: "12-34", text: "Hello" }],
+    ["accept_dm_request", { userId: "12", text: "Hello" }, { user_id: "12", text: "Hello" }],
+    ["decline_dm_request", { conversationId: "12-34", userId: "12" }, { conversation_id: "12-34" }],
+    ["decline_dm_request", { userId: "12" }, { user_id: "12" }],
     ["create_list", { name: "AI", private: true }, { name: "AI", private: true }],
     ["create_list", { name: "AI", description: "d" }, { name: "AI", description: "d" }],
     ["add_list_member", { listId: "5", userId: "12" }, { list_id: "5", user_id: "12" }],
@@ -177,6 +187,8 @@ describe("action bodies", () => {
     expect(() => act("follow_user").body({})).toThrow(/userId or username/);
     expect(() => act("add_list_member").body({ listId: "5" })).toThrow(/userId or username/);
     expect(() => act("send_dm").body({ text: "x" })).toThrow(/conversationId or userId/);
+    expect(() => act("accept_dm_request").body({ text: "x" })).toThrow(/conversationId or userId/);
+    expect(() => act("decline_dm_request").body({})).toThrow(/conversationId or userId/);
     expect(() => act("create_tweet").body({ text: "x", pollDurationMinutes: 60 })).toThrow(/pollChoices/);
     expect(() => act("create_tweet").body({ text: "x", pollChoices: ["a", "b"], quoteUrl: "https://x.com/a/status/1" })).toThrow(/poll/);
     const both = { text: "a", contentState: { blocks: [], entity_map: [] } };
@@ -205,6 +217,19 @@ describe("action bodies", () => {
     expect(publish.safeParse({ articleId: "1", visibility: "friends" }).success).toBe(false);
     const list = z.object(actionInputShape(act("list_articles")));
     expect(list.safeParse({ lifecycle: "archived" }).success).toBe(false);
+    const requests = z.object(actionInputShape(act("list_dm_requests")));
+    expect(requests.safeParse({}).success).toBe(true);
+    expect(requests.safeParse({ folder: "you_may_know", count: 50 }).success).toBe(true);
+    expect(requests.safeParse({ folder: "spam" }).success).toBe(false);
+    expect(requests.safeParse({ count: 0 }).success).toBe(false);
+    expect(requests.safeParse({ count: 51 }).success).toBe(false);
+    const accept = z.object(actionInputShape(act("accept_dm_request")));
+    expect(accept.safeParse({ userId: "12" }).success).toBe(false);
+    expect(accept.safeParse({ userId: "12", text: "   " }).success).toBe(false);
+    expect(accept.safeParse({ userId: "12", text: "x".repeat(10_000) }).success).toBe(true);
+    expect(accept.safeParse({ userId: "12", text: "x".repeat(10_001) }).success).toBe(false);
+    const decline = z.object(actionInputShape(act("decline_dm_request")));
+    expect(decline.safeParse({ conversationId: "12 34" }).success).toBe(false);
   });
 });
 
@@ -232,6 +257,31 @@ describe("runAction", () => {
     const fetch2 = mockFetch(200, { data: { success: true } });
     await runAction(new TwittrApiClient({ mode: "direct", apiKey: "k", fetch: fetch2 }), act("like_tweet"), withCode, { tweetId: "1" });
     expect(sentBody(fetch2).passcode).toBeUndefined();
+  });
+
+  it("POSTs the message request tools to their paths with the session and passcode", async () => {
+    const withCode = { ...session, chatPasscode: "4821" };
+    const cases: [string, Record<string, unknown>, string, Record<string, unknown>][] = [
+      ["list_dm_requests", { folder: "other" }, "/client/dm/requests", { folder: "other" }],
+      ["accept_dm_request", { userId: "12", text: "Hi" }, "/client/dm/requests/accept", { user_id: "12", text: "Hi" }],
+      ["decline_dm_request", { conversationId: "12-34" }, "/client/dm/requests/decline", { conversation_id: "12-34" }],
+    ];
+    for (const [name, args, path, body] of cases) {
+      const fetchMock = mockFetch(200, { data: {} });
+      const client = new TwittrApiClient({ mode: "direct", apiKey: "k", baseUrl: "https://api.test", fetch: fetchMock });
+      const res = await runAction(client, act(name), withCode, args);
+      expect(res.isError, name).toBeFalsy();
+      expect(String(fetchMock.mock.calls[0][0])).toBe(`https://api.test${path}?format=simple`);
+      expect(fetchMock.mock.calls[0][1]?.method).toBe("POST");
+      expect(sentBody(fetchMock)).toEqual({ ...body, cookie: COOKIE, proxy: PROXY, passcode: "4821" });
+    }
+  });
+
+  it("lists message requests without a passcode when none is configured", async () => {
+    const fetchMock = mockFetch(200, { data: [], hasNextPage: false });
+    const client = new TwittrApiClient({ mode: "direct", apiKey: "k", fetch: fetchMock });
+    await runAction(client, act("list_dm_requests"), session, {});
+    expect(sentBody(fetchMock)).toEqual({ cookie: COOKIE, proxy: PROXY });
   });
 
   it("unwraps the raw {status_code, response} wrapper with format raw", async () => {
@@ -291,12 +341,16 @@ describe("runAction", () => {
 });
 
 describe("actionsFor", () => {
-  it("returns no tools without a session and send_dm only with a passcode", () => {
+  it("returns no tools without a session and the tools that need the passcode only with one", () => {
     expect(actionsFor(undefined)).toEqual([]);
     const names = actionsFor(session).map((a) => a.name);
-    expect(names).not.toContain("send_dm");
+    const withCode = actionsFor({ ...session, chatPasscode: "1234" }).map((a) => a.name);
+    for (const name of ["send_dm", "accept_dm_request", "decline_dm_request"]) {
+      expect(names).not.toContain(name);
+      expect(withCode).toContain(name);
+    }
     expect(names).toContain("list_dm_conversations");
-    expect(actionsFor({ ...session, chatPasscode: "1234" }).map((a) => a.name)).toContain("send_dm");
+    expect(names).toContain("list_dm_requests");
   });
 });
 

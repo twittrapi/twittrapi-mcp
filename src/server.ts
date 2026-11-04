@@ -179,7 +179,7 @@ export async function runAction(
   }
 }
 
-/** Account tools to register for a session: DM sending only with a chat passcode. */
+/** Account tools to register for a session: DM sending and accepting or declining requests only with a chat passcode. */
 export function actionsFor(session: XSession | undefined, actions: ActionDef[] = ACTIONS): ActionDef[] {
   if (!session) return [];
   return actions.filter((a) => !a.needsChatPasscode || Boolean(session.chatPasscode));

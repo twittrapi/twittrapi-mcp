@@ -11,6 +11,10 @@ All notable changes to this project are listed here. The format follows
 - Read tool `tweets_by_ids`: up to 100 tweets by numeric ID in one call, billed as one call.
   Results keep the request order; in the simple format tweets that were deleted or never existed
   are left out, in the raw format they are an empty `{}`.
+- Account tools for message requests: `list_dm_requests` (optional `folder` and `count`; does not
+  accept them or mark them as seen), `accept_dm_request` (accepts a one-to-one request and sends the
+  first reply) and `decline_dm_request` (deletes it; the sender is not told). The last two need
+  `TWITTRAPI_X_CHAT_PASSCODE`.
 
 ## [1.2.0] - 2026-10-19
 

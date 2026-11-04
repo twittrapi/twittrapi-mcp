@@ -105,7 +105,7 @@ Any client that can start a stdio server works. The command is `npx -y twittrapi
 | `TWITTRAPI_RESPONSE_FORMAT` | no | `simple` (default) or `raw`. See [Response format](#response-format). |
 | `TWITTRAPI_X_COOKIE` | no | Cookie of your own logged-in x.com session. Turns on the [account tools](#account-tools) together with `TWITTRAPI_X_PROXY`. |
 | `TWITTRAPI_X_PROXY` | no | Your proxy for the account tools, `http://user:pass@host:port`. |
-| `TWITTRAPI_X_CHAT_PASSCODE` | no | Your X Chat passcode. Adds `send_dm` and message text in `list_dm_conversations`. |
+| `TWITTRAPI_X_CHAT_PASSCODE` | no | Your X Chat passcode. Adds `send_dm`, `accept_dm_request`, `decline_dm_request` and message text in `list_dm_conversations`. |
 
 If neither key is set, the server still starts and lists its tools, but every call returns an
 error explaining how to set a key.
@@ -182,6 +182,9 @@ your own X account:
 | `follow_user`, `unfollow_user` | Follow or unfollow (by `userId` or `username`) |
 | `list_dm_conversations` | Your DM inbox |
 | `send_dm` | Send a direct message (needs `TWITTRAPI_X_CHAT_PASSCODE`) |
+| `list_dm_requests` | Pending message requests; does not accept them or mark them as seen |
+| `accept_dm_request` | Accept a one-to-one request and send the first reply (needs `TWITTRAPI_X_CHAT_PASSCODE`) |
+| `decline_dm_request` | Delete a request from your inbox; the sender is not told (needs `TWITTRAPI_X_CHAT_PASSCODE`) |
 | `create_list` | Create a list |
 | `add_list_member`, `remove_list_member` | Add or remove a list member |
 | `create_draft`, `list_drafts` | Save a draft, list your drafts |
