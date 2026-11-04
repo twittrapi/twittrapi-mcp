@@ -6,6 +6,8 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-04
+
 ### Added
 
 - Read tool `tweets_by_ids`: up to 100 tweets by numeric ID in one call, billed as one call.
