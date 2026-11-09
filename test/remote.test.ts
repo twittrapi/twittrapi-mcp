@@ -5,6 +5,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ConcurrencyLimiter, credentialFromRequest, startHttpServer } from "../src/http.js";
 import { createLogger, keyId, redact } from "../src/log.js";
+import { keyHash, type EventSink, type ToolCallEvent } from "../src/events.js";
 import { canonicalUrl, oauthConfigFromEnv, protectedResourceMetadataUrl, wwwAuthenticate } from "../src/oauth.js";
 
 const RESOURCE = "https://mcp.twittrapi.test/mcp";
@@ -43,6 +44,10 @@ beforeAll(async () => {
     apiSeen.push({ url: req.url ?? "", headers: req.headers, body });
     const url = new URL(req.url ?? "/", "http://x");
     res.setHeader("content-type", "application/json");
+    if (url.pathname === "/client/like" && body.includes("401401")) {
+      res.statusCode = 401;
+      return res.end(JSON.stringify({ error: "Unauthorized" }));
+    }
     const respond = () => res.end(JSON.stringify({ data: { username: "jack", id: "12" } }));
     if (url.pathname.startsWith("/user/by/username/slow")) {
       setTimeout(respond, 400);
@@ -399,5 +404,69 @@ describe("hosted mode: account tools", () => {
     const { client, names } = await connect({ Authorization: `Bearer ${SESSION_NO_SCOPE_TOKEN}` });
     await client.close();
     expect(names).not.toContain("create_tweet");
+  });
+});
+
+describe("hosted mode: usage events", () => {
+  const recorded: ToolCallEvent[] = [];
+  const sink: EventSink = { record: (e) => void recorded.push(e), flush: async () => {}, close: async () => {} };
+  let s: Awaited<ReturnType<typeof start>>;
+  beforeAll(async () => {
+    s = await start({ events: sink });
+  });
+  afterAll(async () => s.close());
+
+  async function call(headers: Record<string, string>, name: string, args: Record<string, unknown>) {
+    const client = new Client({ name: "t", version: "0" });
+    await client.connect(new StreamableHTTPClientTransport(s.endpoint, { requestInit: { headers } }));
+    const result = await client.callTool({ name, arguments: args });
+    await client.close();
+    return result;
+  }
+
+  it("records one event per tool call, with the account for OAuth", async () => {
+    recorded.length = 0;
+    await call({ Authorization: `Bearer ${GOOD_TOKEN}` }, "get_user_by_username", { username: "jack" });
+    expect(recorded).toHaveLength(1);
+    expect(recorded[0]).toMatchObject({
+      tool: "get_user_by_username",
+      kind: "read",
+      write: false,
+      auth: "oauth",
+      account_id: 7,
+      client_id: "twc_test",
+      key_hash: keyHash(ISSUER_KEY),
+      ok: true,
+    });
+    expect(recorded[0].session).toBeUndefined();
+  });
+
+  it("records failed account tools with status and the session source, never the session or key", async () => {
+    recorded.length = 0;
+    const result = await call(
+      { "X-API-KEY": "my-api-key-123", "X-Twitter-Cookie": HEADER_COOKIE, "X-Twitter-Proxy": HEADER_PROXY },
+      "like_tweet",
+      { tweetId: "401401" },
+    );
+    expect(result.isError).toBe(true);
+    expect(recorded).toHaveLength(1);
+    const e = recorded[0];
+    expect(e).toMatchObject({ tool: "like_tweet", kind: "account", write: true, auth: "api_key", session: "header", ok: false, status: 401 });
+    expect(e.account_id).toBeUndefined();
+    expect(e.key_hash).toBe(keyHash("my-api-key-123"));
+    expect(e.error).toMatch(/logged out or expired/);
+    const json = JSON.stringify(recorded);
+    for (const secret of ["headerauthtoken123", "headerpass789", "my-api-key-123"]) expect(json).not.toContain(secret);
+  });
+
+  it("records nothing without a sink", async () => {
+    recorded.length = 0;
+    const plain = await start();
+    const client = new Client({ name: "t", version: "0" });
+    await client.connect(new StreamableHTTPClientTransport(plain.endpoint, { requestInit: { headers: { "X-API-KEY": "my-api-key-123" } } }));
+    await client.callTool({ name: "get_user_by_username", arguments: { username: "jack" } });
+    await client.close();
+    await plain.close();
+    expect(recorded).toHaveLength(0);
   });
 });

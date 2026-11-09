@@ -19,7 +19,8 @@ import {
   wwwAuthenticate,
   type OAuthConfig,
 } from "./oauth.js";
-import { createServer } from "./server.js";
+import { eventError, keyHash, noEvents, type EventSink } from "./events.js";
+import { createServer, type ToolCallHook } from "./server.js";
 import { ICON_FILES } from "./icons.js";
 import { VERSION } from "./version.js";
 
@@ -43,6 +44,8 @@ export interface HttpOptions {
   /** Read the client IP from X-Forwarded-For (behind a reverse proxy such as Coolify's Traefik). */
   trustProxy?: boolean;
   logger?: Logger;
+  /** Usage events, one per tool call (hosted mode: MCP_EVENTS_URL). Off when undefined. */
+  events?: EventSink;
   /** Injected for tests. */
   fetch?: typeof fetch;
 }
@@ -284,6 +287,7 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
     // Credentials first: an unauthenticated client gets the 401 + resource metadata it needs to start OAuth
     const cred = credentialFromRequest(req, opts.baseUrl);
     let config: ClientConfig;
+    let oauthAccount: { accountId: number; clientId: string } | undefined;
     if (cred.kind === "none") {
       ctx.auth = "none";
       unauthorized(
@@ -329,6 +333,7 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
       }
       ctx.client_id = check.clientId;
       ctx.account = check.accountId;
+      oauthAccount = { accountId: check.accountId, clientId: check.clientId };
       config = { mode: "direct", apiKey: check.apiKey, baseUrl: opts.baseUrl || DEFAULT_BASE_URL };
       // Headers win: a client that sends its own session uses that one
       xSession ??= check.xSession;
@@ -368,7 +373,24 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
       return;
     }
     const client = new TwittrApiClient({ ...config, format: opts.format, fetch: opts.fetch });
-    const server = createServer(client);
+    const events = opts.events ?? noEvents;
+    const auth: "oauth" | "api_key" | "rapidapi" = cred.kind === "oauth" ? "oauth" : config.mode === "rapidapi" ? "rapidapi" : "api_key";
+    const hashed = keyHash(config.apiKey!);
+    const onToolCall: ToolCallHook = (call) =>
+      events.record({
+        at: new Date().toISOString(),
+        tool: call.tool,
+        kind: call.kind,
+        write: call.write,
+        auth,
+        ...(oauthAccount ? { account_id: oauthAccount.accountId, client_id: oauthAccount.clientId || undefined } : {}),
+        key_hash: hashed,
+        ...(xSession?.source ? { session: xSession.source } : {}),
+        ok: call.ok,
+        ...(call.ok ? {} : { ...(call.status ? { status: call.status } : {}), error: eventError(call.message) }),
+        ms: call.ms,
+      });
+    const server = createServer(client, undefined, opts.events ? onToolCall : undefined);
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
     res.on("close", () => {
       release();

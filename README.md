@@ -348,6 +348,8 @@ registration, PKCE S256, consent screen, rotating refresh tokens). The server:
 | `OAUTH_METADATA_URL` | `$OAUTH_ISSUER/.well-known/oauth-authorization-server` | Where the relayed metadata is fetched |
 | `OAUTH_CACHE_SECONDS` | `30` | Cache for valid tokens (max 300). Revocations take effect within this time. |
 | `MAX_CONCURRENCY_PER_KEY` | `8` | Requests in flight per key and instance; more get `429` with `Retry-After: 1`. `0` turns it off. |
+| `MCP_EVENTS_URL` | – | Optional. Usage events, one per tool call, POSTed in batches to this URL (the TwittrAPI dashboard: `/api/mcp/events`). No tool arguments, results, X session or API key; the key only as a SHA-256 hash. |
+| `MCP_EVENTS_SECRET` | `OAUTH_INTROSPECTION_SECRET` | Bearer secret for `MCP_EVENTS_URL`. |
 | `MAX_BODY_BYTES` | `262144` | Larger request bodies get `413` |
 | `REQUEST_TIMEOUT_MS` | `90000` | Requests running longer get `504` |
 | `ALLOWED_ORIGINS` | – | Comma-separated `Origin` allowlist for browser clients (DNS rebinding protection) |

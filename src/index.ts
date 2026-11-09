@@ -2,6 +2,7 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { TwittrApiClient, configFromEnv, parseResponseFormat } from "./client.js";
 import { startHttpServer } from "./http.js";
+import { EventReporter } from "./events.js";
 import { createLogger, parseLogLevel } from "./log.js";
 import { oauthConfigFromEnv } from "./oauth.js";
 import { createServer } from "./server.js";
@@ -42,6 +43,8 @@ Environment (HTTP mode, hosted deployments; see README "Hosted MCP server"):
                         Shared secret with the dashboard (32+ characters)
   OAUTH_METADATA_URL    Internal URL of the AS metadata, relayed for older clients (optional)
   OAUTH_CACHE_SECONDS   Cache for valid tokens, default 30 (max 300)
+  MCP_EVENTS_URL        Dashboard endpoint for usage events, one per tool call (optional)
+  MCP_EVENTS_SECRET     Bearer secret for it (default OAUTH_INTROSPECTION_SECRET)
   MAX_CONCURRENCY_PER_KEY  Concurrent requests per key and instance, default 8 (0 = off)
   MAX_BODY_BYTES        Request body limit, default 262144
   REQUEST_TIMEOUT_MS    Time limit per request, default 90000
@@ -106,6 +109,11 @@ async function main(): Promise<void> {
       return n;
     };
     const oauth = oauthConfigFromEnv(env);
+    const logger = createLogger({ level: parseLogLevel(env.LOG_LEVEL) });
+    const eventsUrl = env.MCP_EVENTS_URL?.trim();
+    const eventsSecret = env.MCP_EVENTS_SECRET?.trim() || env.OAUTH_INTROSPECTION_SECRET?.trim();
+    if (eventsUrl && !eventsSecret) throw new Error("MCP_EVENTS_URL needs MCP_EVENTS_SECRET or OAUTH_INTROSPECTION_SECRET as well");
+    const events = eventsUrl ? new EventReporter({ url: eventsUrl, secret: eventsSecret!, logger }) : undefined;
     const server = await startHttpServer({
       port: args.port,
       host: args.host,
@@ -117,7 +125,8 @@ async function main(): Promise<void> {
       maxConcurrencyPerKey: num("MAX_CONCURRENCY_PER_KEY", 8),
       allowedOrigins: env.ALLOWED_ORIGINS?.split(",").map((s) => s.trim()).filter(Boolean),
       trustProxy: env.TRUST_PROXY === "1" || env.TRUST_PROXY === "true",
-      logger: createLogger({ level: parseLogLevel(env.LOG_LEVEL) }),
+      logger,
+      events,
     });
     const addr = server.address();
     const port = typeof addr === "object" && addr ? addr.port : args.port;
@@ -126,7 +135,7 @@ async function main(): Promise<void> {
         (oauth ? ` (OAuth: resource ${oauth.resourceUrl}, issuer ${oauth.issuer})` : " (API key headers only)"),
     );
     const shutdown = () => {
-      server.close(() => process.exit(0));
+      server.close(() => void (events?.close() ?? Promise.resolve()).finally(() => process.exit(0)));
       setTimeout(() => process.exit(0), 10_000).unref();
     };
     process.on("SIGTERM", shutdown);

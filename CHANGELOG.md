@@ -6,6 +6,16 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-09
+
+### Added
+
+- Hosted mode: usage events. With `MCP_EVENTS_URL` set, the server sends one event per tool call
+  (tool, read or account tool, auth method, account for OAuth, SHA-256 of the API key, source of
+  the X session, success or the error with its status, duration) in batches to that URL, signed
+  with `MCP_EVENTS_SECRET` (default `OAUTH_INTROSPECTION_SECRET`). Never tool arguments, results,
+  the X session or the key itself. Off by default; a dashboard that is down never affects a call.
+
 ## [1.4.0] - 2026-11-09
 
 ### Added

@@ -1,3 +1,4 @@
+import type { ToolOutcome } from "./events.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
@@ -100,6 +101,7 @@ export async function runEndpoint(
   client: TwittrApiClient,
   def: EndpointDef,
   args: Record<string, unknown>,
+  onOutcome?: (o: ToolOutcome) => void,
 ): Promise<CallToolResult> {
   try {
     const { max_chars, format, ...apiArgs } = args;
@@ -117,10 +119,12 @@ export async function runEndpoint(
       // A next cursor equal to the one just used means X has nothing more.
       requestCursor: typeof apiArgs.cursor === "string" ? apiArgs.cursor : undefined,
     });
+    onOutcome?.({ ok: true });
     return { content: [{ type: "text", text }] };
   } catch (err) {
     const message =
       err instanceof TwittrApiError || err instanceof Error ? err.message : `Unexpected error: ${String(err)}`;
+    onOutcome?.({ ok: false, status: err instanceof TwittrApiError ? err.status : undefined, message });
     return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
   }
 }
@@ -152,6 +156,7 @@ export async function runAction(
   def: ActionDef,
   session: XSession,
   args: Record<string, unknown>,
+  onOutcome?: (o: ToolOutcome) => void,
 ): Promise<CallToolResult> {
   try {
     const { max_chars, format, ...toolArgs } = args;
@@ -165,6 +170,7 @@ export async function runAction(
       paginated: def.paginated ?? false,
       requestCursor: typeof toolArgs.cursor === "string" ? toolArgs.cursor : undefined,
     });
+    onOutcome?.({ ok: true });
     return { content: [{ type: "text", text: scrubSession(text, session) }] };
   } catch (err) {
     let message =
@@ -181,7 +187,9 @@ export async function runAction(
           ? ` The proxy (${names.proxy}) could not be reached.`
           : ` If the API key is valid, the X session (${names.cookie}) may be logged out or expired: the user needs to ${renew}.`;
     }
-    return { content: [{ type: "text", text: `Error: ${scrubSession(message, session)}` }], isError: true };
+    message = scrubSession(message, session);
+    onOutcome?.({ ok: false, status, message });
+    return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
   }
 }
 
@@ -191,7 +199,25 @@ export function actionsFor(session: XSession | undefined, actions: ActionDef[] =
   return actions.filter((a) => !a.needsChatPasscode || Boolean(session.chatPasscode));
 }
 
-export function createServer(client: TwittrApiClient, endpoints: EndpointDef[] = ENDPOINTS): McpServer {
+/** Called after every tool call with what happened (hosted mode reports it as a usage event). */
+export type ToolCallHook = (call: { tool: string; kind: "read" | "account"; write: boolean; ms: number } & ToolOutcome) => void;
+
+export function createServer(
+  client: TwittrApiClient,
+  endpoints: EndpointDef[] = ENDPOINTS,
+  onToolCall?: ToolCallHook,
+): McpServer {
+  const observe = (tool: string, kind: "read" | "account", write: boolean) => {
+    if (!onToolCall) return undefined;
+    const started = Date.now();
+    return (o: ToolOutcome) => {
+      try {
+        onToolCall({ tool, kind, write, ms: Date.now() - started, ...o });
+      } catch {
+        // Reporting never affects the tool result
+      }
+    };
+  };
   const session = client.config.xSession;
   const actions = actionsFor(session);
   const defaultFormat = client.config.format ?? DEFAULT_FORMAT;
@@ -214,7 +240,7 @@ export function createServer(client: TwittrApiClient, endpoints: EndpointDef[] =
           openWorldHint: true,
         },
       },
-      async (args: Record<string, unknown>) => runEndpoint(client, def, args),
+      async (args: Record<string, unknown>) => runEndpoint(client, def, args, observe(def.name, "read", false)),
     );
   }
   // Account tools exist only when the server has an X session (TWITTRAPI_X_COOKIE + TWITTRAPI_X_PROXY).
@@ -233,7 +259,7 @@ export function createServer(client: TwittrApiClient, endpoints: EndpointDef[] =
           openWorldHint: true,
         },
       },
-      async (args: Record<string, unknown>) => runAction(client, def, session!, args),
+      async (args: Record<string, unknown>) => runAction(client, def, session!, args, observe(def.name, "account", def.write)),
     );
   }
   return server;
