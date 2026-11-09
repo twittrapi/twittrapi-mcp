@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { TwittrApiClient, scrubSession, xSessionFromEnv, type XSession } from "../src/client.js";
 import { ACTIONS, getAction } from "../src/actions.js";
-import { actionInputShape, actionsFor, runAction } from "../src/server.js";
+import { actionInputShape, actionsFor, pickAccount, runAction } from "../src/server.js";
 
 const COOKIE = "auth_token=abcdef0123456789; ct0=fedcba9876543210; twid=u%3D12";
 const PROXY = "http://proxyuser:proxypass123@10.0.0.1:8080";
@@ -400,5 +400,27 @@ describe("session hints by source", () => {
       const res = await runAction(client, act("like_tweet"), { ...session, source }, { tweetId: "20" });
       expect(text(res)).toMatch(hint);
     }
+  });
+});
+
+describe("pickAccount", () => {
+  const a = (id: number, handle: string | undefined, userId: string, isDefault = false): XSession => ({
+    cookie: `auth_token=t${id}; ct0=c${id}`,
+    proxy: "http://p.test:1",
+    id,
+    ...(handle ? { handle } : {}),
+    userId,
+    isDefault,
+  });
+  const accounts = [a(1, "Brand", "100"), a(2, undefined, "200", true)];
+
+  it("matches @handle in any case, user ID and dashboard ID; empty means the default", () => {
+    expect(pickAccount(accounts, "@brand")?.id).toBe(1);
+    expect(pickAccount(accounts, " BRAND ")?.id).toBe(1);
+    expect(pickAccount(accounts, "200")?.id).toBe(2);
+    expect(pickAccount(accounts, "1")?.id).toBe(1);
+    expect(pickAccount(accounts, undefined)?.id).toBe(2);
+    expect(pickAccount(accounts, "")?.id).toBe(2);
+    expect(pickAccount(accounts, "@other")).toBeUndefined();
   });
 });

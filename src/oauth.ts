@@ -77,7 +77,7 @@ export function wwwAuthenticate(cfg: Pick<OAuthConfig, "resourceUrl"> | undefine
 }
 
 export type TokenCheck =
-  | { ok: true; apiKey: string; clientId: string; accountId: number; exp: number; xSession?: XSession }
+  | { ok: true; apiKey: string; clientId: string; accountId: number; exp: number; xSession?: XSession; xAccounts?: XSession[] }
   | { ok: false; reason: "invalid" | "unavailable" };
 
 interface CacheEntry {
@@ -169,7 +169,10 @@ export class TokenIntrospector {
     if (!scopes.includes(OAUTH_SCOPE)) return { ok: false, reason: "invalid" };
     if (exp * 1000 <= now) return { ok: false, reason: "invalid" };
     if (!extra || typeof extra.api_key !== "string" || !extra.api_key) return { ok: false, reason: "invalid" };
-    const xSession = scopes.includes(OAUTH_WRITE_SCOPE) ? storedSession(extra.x_session) : undefined;
+    const canAct = scopes.includes(OAUTH_WRITE_SCOPE);
+    // Dashboards since 1.6 send every saved account (x_sessions); older ones only x_session
+    const xAccounts = canAct ? storedAccounts(extra.x_sessions) : [];
+    const xSession = canAct ? (xAccounts.find((a) => a.isDefault) ?? xAccounts[0] ?? storedSession(extra.x_session)) : undefined;
     return {
       ok: true,
       apiKey: extra.api_key,
@@ -177,6 +180,7 @@ export class TokenIntrospector {
       accountId: typeof extra.account_id === "number" ? extra.account_id : 0,
       exp,
       ...(xSession ? { xSession } : {}),
+      ...(xAccounts.length > 1 ? { xAccounts } : {}),
     };
   }
 }
@@ -191,6 +195,23 @@ function storedSession(raw: unknown): XSession | undefined {
   } catch {
     return undefined;
   }
+}
+
+/** The saved X accounts the dashboard sends, default first; malformed entries are left out. */
+function storedAccounts(raw: unknown): XSession[] {
+  if (!Array.isArray(raw)) return [];
+  const out: XSession[] = [];
+  for (const item of raw.slice(0, 500)) {
+    const session = storedSession(item);
+    if (!session) continue;
+    const o = item as Record<string, unknown>;
+    const handle = typeof o.handle === "string" && /^[A-Za-z0-9_]{1,15}$/.test(o.handle) ? o.handle : undefined;
+    const userId = typeof o.user_id === "string" && /^\d{1,25}$/.test(o.user_id) ? o.user_id : undefined;
+    const id = Number.isSafeInteger(o.id) && (o.id as number) > 0 ? (o.id as number) : undefined;
+    out.push({ ...session, ...(id ? { id } : {}), ...(handle ? { handle } : {}), ...(userId ? { userId } : {}), isDefault: o.default === true });
+  }
+  if (out.length > 0 && !out.some((a) => a.isDefault)) out[0].isDefault = true;
+  return out.sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
 }
 
 /** Reads the OAuth settings from the environment; undefined when OAuth is not configured. */

@@ -21,7 +21,7 @@ import { SERVER_ICONS } from "./icons.js";
 import { VERSION } from "./version.js";
 
 /** Server instructions for the given default response format. */
-export function serverInstructions(format: ResponseFormat = DEFAULT_FORMAT, withActions = false): string {
+export function serverInstructions(format: ResponseFormat = DEFAULT_FORMAT, withActions = false, accounts: XSession[] = []): string {
   const formatLine =
     format === "simple"
       ? `Responses use the compact simple format by default: {"data": ...} with flat camelCase tweets and users (id, text, createdAt, author, counts, media, ...). Pass format "raw" to a tool only if you need fields it leaves out (cards, polls, edit history, community notes).`
@@ -35,9 +35,22 @@ Tools without a format argument always return raw JSON.
 A 402 error means the account has no balance: stop and tell the user. Every call is billed.${
     withActions
       ? `
-Account tools (create_tweet, like_tweet, follow_user, send_dm, ...) act on the user's own X account. Call a tool that posts, deletes or changes something only when the user asked for that exact action, and confirm the text before posting. They do not take a cookie or proxy: the server adds the user's X session itself.`
+Account tools (create_tweet, like_tweet, follow_user, send_dm, ...) act on the user's own X account. Call a tool that posts, deletes or changes something only when the user asked for that exact action, and confirm the text before posting. They do not take a cookie or proxy: the server adds the user's X session itself.${accountsLine(accounts)}`
       : ""
   }`;
+}
+
+/** Name of a saved account for the model: @handle, else the X user ID. */
+export function accountLabel(a: XSession): string {
+  return a.handle ? `@${a.handle}` : a.userId ? `user ID ${a.userId}` : a.id ? `account ${a.id}` : "the saved account";
+}
+
+function accountsLine(accounts: XSession[]): string {
+  if (accounts.length < 2) return "";
+  const shown = accounts.slice(0, 20).map((a) => `${accountLabel(a)}${a.isDefault ? " (default)" : ""}`);
+  const more = accounts.length > 20 ? `, and ${accounts.length - 20} more (list_x_accounts lists all)` : "";
+  return `
+The user saved ${accounts.length} X accounts: ${shown.join(", ")}${more}. Account tools use the default unless you pass account (a @handle or user ID). When the user names an account ("post from @name"), pass it; when it is unclear which account they mean, ask.`;
 }
 
 export const SERVER_INSTRUCTIONS = serverInstructions(DEFAULT_FORMAT);
@@ -130,9 +143,32 @@ export async function runEndpoint(
 }
 
 /** Input shape of an account tool: its own params plus max_chars and (unless raw only) format. Never cookie or proxy. */
-export function actionInputShape(def: ActionDef, defaultFormat: ResponseFormat = DEFAULT_FORMAT): Record<string, z.ZodType> {
-  if (def.rawOnly) return { ...def.params, max_chars: maxCharsSchema };
-  return { ...def.params, max_chars: maxCharsSchema, format: formatSchema(defaultFormat) };
+const accountSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(40)
+  .optional()
+  .describe("Which saved X account acts: its @handle or numeric user ID. Leave it out for the default account.");
+
+export function actionInputShape(
+  def: ActionDef,
+  defaultFormat: ResponseFormat = DEFAULT_FORMAT,
+  multiAccount = false,
+): Record<string, z.ZodType> {
+  const account: Record<string, z.ZodType> = multiAccount ? { account: accountSchema } : {};
+  if (def.rawOnly) return { ...def.params, ...account, max_chars: maxCharsSchema };
+  return { ...def.params, ...account, max_chars: maxCharsSchema, format: formatSchema(defaultFormat) };
+}
+
+/**
+ * The saved account an `account` argument names (@handle, handle or user ID, any case); the default
+ * when it is empty. undefined when nothing matches.
+ */
+export function pickAccount(accounts: XSession[], wanted: unknown): XSession | undefined {
+  const w = typeof wanted === "string" ? wanted.trim().replace(/^@/, "").toLowerCase() : "";
+  if (!w) return accounts.find((a) => a.isDefault) ?? accounts[0];
+  return accounts.find((a) => a.handle?.toLowerCase() === w) ?? accounts.find((a) => a.userId === w || (a.id !== undefined && String(a.id) === w));
 }
 
 /**
@@ -154,12 +190,27 @@ function unwrapClientResponse(data: unknown): unknown {
 export async function runAction(
   client: TwittrApiClient,
   def: ActionDef,
-  session: XSession,
+  sessions: XSession | XSession[],
   args: Record<string, unknown>,
   onOutcome?: (o: ToolOutcome) => void,
 ): Promise<CallToolResult> {
+  const accounts = Array.isArray(sessions) ? sessions : [sessions];
+  const { account: wanted, ...rest } = args;
+  const session = pickAccount(accounts, accounts.length > 1 ? wanted : undefined);
+  if (!session) {
+    const names = accounts.slice(0, 30).map(accountLabel).join(", ");
+    const message = `No saved X account matches "${String(wanted).slice(0, 40)}". Saved accounts: ${names}.`;
+    onOutcome?.({ ok: false, message });
+    return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
+  }
+  const used = session.id ? { xSessionId: session.id } : {};
+  if (def.needsChatPasscode && !session.chatPasscode) {
+    const message = `${accountLabel(session)} has no X Chat passcode saved, so it cannot send or manage DMs. Use another account or save the passcode in the TwittrAPI dashboard.`;
+    onOutcome?.({ ok: false, message, ...used });
+    return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
+  }
   try {
-    const { max_chars, format, ...toolArgs } = args;
+    const { max_chars, format, ...toolArgs } = rest;
     const fmt = pickFormat(client, def.rawOnly, format);
     const body: Record<string, unknown> = { ...def.body(toolArgs), cookie: session.cookie, proxy: session.proxy };
     if (def.path.startsWith("/client/dm/") && session.chatPasscode) body.passcode = session.chatPasscode;
@@ -170,7 +221,7 @@ export async function runAction(
       paginated: def.paginated ?? false,
       requestCursor: typeof toolArgs.cursor === "string" ? toolArgs.cursor : undefined,
     });
-    onOutcome?.({ ok: true });
+    onOutcome?.({ ok: true, ...used });
     return { content: [{ type: "text", text: scrubSession(text, session) }] };
   } catch (err) {
     let message =
@@ -187,16 +238,19 @@ export async function runAction(
           ? ` The proxy (${names.proxy}) could not be reached.`
           : ` If the API key is valid, the X session (${names.cookie}) may be logged out or expired: the user needs to ${renew}.`;
     }
+    if (accounts.length > 1) message = `${accountLabel(session)}: ${message}`;
     message = scrubSession(message, session);
-    onOutcome?.({ ok: false, status, message });
+    onOutcome?.({ ok: false, status, message, ...used });
     return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
   }
 }
 
 /** Account tools to register for a session: DM sending and accepting or declining requests only with a chat passcode. */
-export function actionsFor(session: XSession | undefined, actions: ActionDef[] = ACTIONS): ActionDef[] {
-  if (!session) return [];
-  return actions.filter((a) => !a.needsChatPasscode || Boolean(session.chatPasscode));
+export function actionsFor(session: XSession | XSession[] | undefined, actions: ActionDef[] = ACTIONS): ActionDef[] {
+  const accounts = Array.isArray(session) ? session : session ? [session] : [];
+  if (accounts.length === 0) return [];
+  const anyPasscode = accounts.some((a) => Boolean(a.chatPasscode));
+  return actions.filter((a) => !a.needsChatPasscode || anyPasscode);
 }
 
 /** Called after every tool call with what happened (hosted mode reports it as a usage event). */
@@ -219,11 +273,13 @@ export function createServer(
     };
   };
   const session = client.config.xSession;
-  const actions = actionsFor(session);
+  const accounts = client.config.xAccounts && client.config.xAccounts.length > 1 ? client.config.xAccounts : session ? [session] : [];
+  const multi = accounts.length > 1;
+  const actions = actionsFor(accounts);
   const defaultFormat = client.config.format ?? DEFAULT_FORMAT;
   const server = new McpServer(
     { name: "twittrapi-mcp", title: "TwittrAPI", version: VERSION, websiteUrl: "https://twittrapi.com", icons: SERVER_ICONS },
-    { instructions: serverInstructions(defaultFormat, actions.length > 0) },
+    { instructions: serverInstructions(defaultFormat, actions.length > 0, accounts) },
   );
   for (const def of endpoints) {
     server.registerTool(
@@ -250,7 +306,7 @@ export function createServer(
       {
         title: def.title,
         description: def.description,
-        inputSchema: actionInputShape(def, defaultFormat),
+        inputSchema: actionInputShape(def, defaultFormat, multi),
         annotations: {
           title: def.title,
           readOnlyHint: !def.write,
@@ -259,7 +315,38 @@ export function createServer(
           openWorldHint: true,
         },
       },
-      async (args: Record<string, unknown>) => runAction(client, def, session!, args, observe(def.name, "account", def.write)),
+      async (args: Record<string, unknown>) => runAction(client, def, accounts, args, observe(def.name, "account", def.write)),
+    );
+  }
+  if (multi) {
+    server.registerTool(
+      "list_x_accounts",
+      {
+        title: "List saved X accounts",
+        description:
+          "List the X accounts the user saved for account tools: @handle, user ID, which one is the default and whether DMs work. Free, no API call.",
+        inputSchema: {},
+        annotations: { title: "List saved X accounts", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      },
+      async () => ({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              {
+                data: accounts.map((a) => ({
+                  account: a.handle ? `@${a.handle}` : (a.userId ?? null),
+                  userId: a.userId ?? null,
+                  default: Boolean(a.isDefault),
+                  dms: Boolean(a.chatPasscode),
+                })),
+              },
+              null,
+              2,
+            ),
+          },
+        ],
+      }),
     );
   }
   return server;

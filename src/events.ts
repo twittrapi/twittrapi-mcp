@@ -23,6 +23,8 @@ export interface ToolCallEvent {
   client_id?: string;
   /** Where the X session came from, when there is one */
   session?: "header" | "oauth" | "env";
+  /** Which saved dashboard account an account tool used (hosted mode with several accounts) */
+  x_session_id?: number;
   ok: boolean;
   /** HTTP status of the failed API call, when there was one */
   status?: number;
@@ -32,7 +34,8 @@ export interface ToolCallEvent {
 }
 
 /** What a tool run reports about itself. */
-export type ToolOutcome = { ok: true } | { ok: false; status?: number; message: string };
+/** xSessionId: the saved dashboard account an account tool used (hosted mode). */
+export type ToolOutcome = ({ ok: true } | { ok: false; status?: number; message: string }) & { xSessionId?: number };
 
 export interface EventSink {
   record(event: ToolCallEvent): void;

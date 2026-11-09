@@ -14,6 +14,11 @@ const GOOD_TOKEN = "twa_at_good-token-abcdefghijklmnopqrstuvwxyz";
 const OTHER_AUD_TOKEN = "twa_at_other-audience-abcdefghijklmnopqrst";
 const WRITE_TOKEN = "twa_at_write-token-abcdefghijklmnopqrstuvw";
 const SESSION_NO_SCOPE_TOKEN = "twa_at_session-no-scope-abcdefghijklmn";
+const MULTI_TOKEN = "twa_at_multi-accounts-abcdefghijklmnopqrs";
+const ACCOUNTS = [
+  { id: 11, handle: "brand", user_id: "111", default: true, cookie: "auth_token=brandauthtoken1; ct0=brandct0value1", proxy: "http://u:brandpass111@proxy.test:8080" },
+  { id: 12, handle: "Support_Team", user_id: "222", default: false, cookie: "auth_token=supportauthtoken2; ct0=supportct0value2", proxy: "http://u:supportpass222@proxy.test:8080", chat_passcode: "8642" },
+];
 const STORED = { cookie: "auth_token=storedauthtoken123; ct0=storedct0value456", proxy: "http://u:storedpass789@proxy.test:8080" };
 const HEADER_COOKIE = "auth_token=headerauthtoken123; ct0=headerct0value456";
 const HEADER_PROXY = "http://u:headerpass789@proxy.test:8080";
@@ -44,6 +49,10 @@ beforeAll(async () => {
     apiSeen.push({ url: req.url ?? "", headers: req.headers, body });
     const url = new URL(req.url ?? "/", "http://x");
     res.setHeader("content-type", "application/json");
+    if (url.pathname === "/client/like" && body.includes("407407")) {
+      res.statusCode = 407;
+      return res.end("{}");
+    }
     if (url.pathname === "/client/like" && body.includes("401401")) {
       res.statusCode = 401;
       return res.end(JSON.stringify({ error: "Unauthorized" }));
@@ -79,6 +88,10 @@ beforeAll(async () => {
       if (token === OTHER_AUD_TOKEN) return res.end(JSON.stringify({ ...base, aud: "https://other.example/mcp" }));
       if (token === WRITE_TOKEN) {
         return res.end(JSON.stringify({ ...base, scope: "mcp x:write", aud: RESOURCE, twittrapi: { ...base.twittrapi, x_session: STORED } }));
+      }
+      if (token === MULTI_TOKEN) {
+        const stored = { cookie: ACCOUNTS[0].cookie, proxy: ACCOUNTS[0].proxy };
+        return res.end(JSON.stringify({ ...base, scope: "mcp x:write", aud: RESOURCE, twittrapi: { ...base.twittrapi, x_session: stored, x_sessions: ACCOUNTS } }));
       }
       if (token === SESSION_NO_SCOPE_TOKEN) {
         return res.end(JSON.stringify({ ...base, aud: RESOURCE, twittrapi: { ...base.twittrapi, x_session: STORED } }));
@@ -400,6 +413,41 @@ describe("hosted mode: account tools", () => {
     expect(post!.headers["x-api-key"]).toBe(ISSUER_KEY);
   });
 
+  it("several saved accounts: the default acts unless account names another one", async () => {
+    apiSeen.length = 0;
+    const { client, names } = await connect({ Authorization: `Bearer ${MULTI_TOKEN}` });
+    expect(names).toContain("list_x_accounts");
+    expect(names).toContain("send_dm");
+    const tools = (await client.listTools()).tools;
+    expect(Object.keys(tools.find((t) => t.name === "create_tweet")!.inputSchema.properties ?? {})).toContain("account");
+    expect(client.getInstructions()).toMatch(/2 X accounts: @brand \(default\), @Support_Team/);
+
+    const list = await client.callTool({ name: "list_x_accounts", arguments: {} });
+    const text = (list.content as { text: string }[])[0].text;
+    expect(JSON.parse(text).data).toEqual([
+      { account: "@brand", userId: "111", default: true, dms: false },
+      { account: "@Support_Team", userId: "222", default: false, dms: true },
+    ]);
+    for (const secret of ["brandauthtoken1", "supportpass222", "8642"]) expect(text).not.toContain(secret);
+
+    await client.callTool({ name: "create_tweet", arguments: { text: "from the default" } });
+    await client.callTool({ name: "create_tweet", arguments: { text: "from support", account: "@support_team" } });
+    await client.callTool({ name: "like_tweet", arguments: { tweetId: "20", account: "222" } });
+    const posts = apiSeen.filter((r) => r.url.startsWith("/client/")).map((r) => JSON.parse(r.body!));
+    expect(posts.map((b) => b.cookie)).toEqual([ACCOUNTS[0].cookie, ACCOUNTS[1].cookie, ACCOUNTS[1].cookie]);
+    expect(posts.every((b) => !("account" in b))).toBe(true);
+
+    const unknown = await client.callTool({ name: "create_tweet", arguments: { text: "x", account: "@nobody" } });
+    expect(unknown.isError).toBe(true);
+    expect((unknown.content as { text: string }[])[0].text).toMatch(/No saved X account matches "@nobody".*@brand, @Support_Team/);
+
+    // The default has no chat passcode: DMs need the account that has one
+    const dm = await client.callTool({ name: "send_dm", arguments: { userId: "5", text: "hi" } });
+    expect(dm.isError).toBe(true);
+    expect((dm.content as { text: string }[])[0].text).toMatch(/@brand has no X Chat passcode/);
+    await client.close();
+  });
+
   it("OAuth grant without x:write stays read only even if a session is sent along", async () => {
     const { client, names } = await connect({ Authorization: `Bearer ${SESSION_NO_SCOPE_TOKEN}` });
     await client.close();
@@ -457,6 +505,17 @@ describe("hosted mode: usage events", () => {
     expect(e.error).toMatch(/logged out or expired/);
     const json = JSON.stringify(recorded);
     for (const secret of ["headerauthtoken123", "headerpass789", "my-api-key-123"]) expect(json).not.toContain(secret);
+  });
+
+  it("records which saved account acted, and a failing proxy as 407", async () => {
+    recorded.length = 0;
+    await call({ Authorization: `Bearer ${MULTI_TOKEN}` }, "like_tweet", { tweetId: "20", account: "support_team" });
+    const failed = await call({ Authorization: `Bearer ${MULTI_TOKEN}` }, "like_tweet", { tweetId: "407407" });
+    expect(recorded.map((e) => [e.ok, e.x_session_id, e.status])).toEqual([
+      [true, 12, undefined],
+      [false, 11, 407],
+    ]);
+    expect((failed.content as { text: string }[])[0].text).toMatch(/@brand: .*proxy/);
   });
 
   it("records nothing without a sink", async () => {

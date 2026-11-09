@@ -304,6 +304,7 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
       return;
     }
     let xSession = fromHeaders.session;
+    let xAccounts: XSession[] | undefined;
     if (cred.kind === "invalid") {
       ctx.auth = "rapidapi";
       sendJson(res, 400, rpcError(-32600, cred.message), CORS_HEADERS);
@@ -336,13 +337,16 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
       oauthAccount = { accountId: check.accountId, clientId: check.clientId };
       config = { mode: "direct", apiKey: check.apiKey, baseUrl: opts.baseUrl || DEFAULT_BASE_URL };
       // Headers win: a client that sends its own session uses that one
-      xSession ??= check.xSession;
+      if (!xSession) {
+        xSession = check.xSession;
+        xAccounts = check.xAccounts;
+      }
     } else {
       ctx.auth = cred.config.mode === "rapidapi" ? "rapidapi" : "api_key";
       config = cred.config;
     }
     if (xSession) {
-      config = { ...config, xSession };
+      config = { ...config, xSession, ...(xAccounts ? { xAccounts } : {}) };
       ctx.x_session = xSession.source;
     }
     const kid = keyId(config.apiKey!);
@@ -386,6 +390,7 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
         ...(oauthAccount ? { account_id: oauthAccount.accountId, client_id: oauthAccount.clientId || undefined } : {}),
         key_hash: hashed,
         ...(xSession?.source ? { session: xSession.source } : {}),
+        ...(call.xSessionId ? { x_session_id: call.xSessionId } : {}),
         ok: call.ok,
         ...(call.ok ? {} : { ...(call.status ? { status: call.status } : {}), error: eventError(call.message) }),
         ms: call.ms,

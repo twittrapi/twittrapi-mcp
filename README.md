@@ -299,8 +299,11 @@ The [account tools](#account-tools) appear when the request also carries the cal
 - `X-Twitter-Cookie: auth_token=...; ct0=...; twid=u%3D...` and `X-Twitter-Proxy: http://user:pass@host:port`
   (both or neither; `400` otherwise), plus `X-Twitter-Chat-Passcode` for the DM tools. The values
   are used for that request only, never stored, logged or returned.
-- In hosted mode, an OAuth token with the `x:write` scope: the dashboard sends the session the
-  customer saved there. Headers take precedence over it.
+- In hosted mode, an OAuth token with the `x:write` scope: the dashboard sends the X accounts the
+  customer saved there. Headers take precedence over them. With more than one saved account, every
+  account tool takes an optional `account` argument (`@handle` or numeric user ID; the default
+  account when it is left out), the server instructions name the accounts, and the free
+  `list_x_accounts` tool lists them.
 
 `TWITTRAPI_X_COOKIE` and `TWITTRAPI_X_PROXY` from the server's own environment are ignored in HTTP
 mode, so one deployment never acts for everyone with one account. `TWITTRAPI_BASE_URL` and `TWITTRAPI_RESPONSE_FORMAT` are still read from the environment; callers

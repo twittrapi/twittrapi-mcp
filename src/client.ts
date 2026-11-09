@@ -1,3 +1,4 @@
+import { nodeFetch } from "./node-fetch.js";
 import { VERSION } from "./version.js";
 
 export const DEFAULT_BASE_URL = "https://api.twittrapi.com";
@@ -66,6 +67,11 @@ export interface ClientConfig {
    * TWITTRAPI_X_PROXY. Never shown to the model and never logged. Undefined: no write tools.
    */
   xSession?: XSession;
+  /**
+   * Hosted mode: every X account the user saved in the dashboard, default first. With more than one,
+   * account tools take an `account` argument; xSession is the default.
+   */
+  xAccounts?: XSession[];
 }
 
 /** Cookie and proxy of the user's own X account, sent in the body of the /client endpoints. */
@@ -78,6 +84,11 @@ export interface XSession {
   chatPasscode?: string;
   /** Where the session came from, for error hints: server env, request headers or the dashboard (OAuth). */
   source?: XSessionSource;
+  /** Saved account in the dashboard (OAuth): its ID there, @handle and numeric X user ID. */
+  id?: number;
+  handle?: string;
+  userId?: string;
+  isDefault?: boolean;
 }
 
 export type XSessionSource = "env" | "header" | "oauth";
@@ -327,7 +338,9 @@ export class TwittrApiClient {
     try {
       const headers = buildHeaders(this.config);
       if (body !== undefined) headers["Content-Type"] = "application/json";
-      res = await this.fetchImpl(url, {
+      // Account calls (POST): Node's fetch throws on the 407 the API sends for a failing proxy
+      const doFetch = method === "POST" && !this.config.fetch ? nodeFetch : this.fetchImpl;
+      res = await doFetch(url, {
         method,
         headers,
         ...(body !== undefined ? { body: JSON.stringify(body) } : {}),

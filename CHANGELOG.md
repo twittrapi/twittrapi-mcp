@@ -6,6 +6,22 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-09
+
+### Added
+
+- Hosted mode: several X accounts per customer. The dashboard sends every saved account
+  (`x_sessions`); with more than one, account tools take an optional `account` argument (`@handle`
+  or user ID, the default account otherwise), the instructions list the accounts, and a free
+  `list_x_accounts` tool returns them without cookies or proxies. DM tools are listed when any
+  account has a chat passcode and say so when the chosen one has none.
+- Usage events carry `x_session_id`, the saved account an account tool used.
+
+### Fixed
+
+- A failing proxy now reads as a proxy error. Node's fetch throws on the `407` the API sends for
+  it, so account calls said "Could not reach TwittrAPI"; they now go through `node:http(s)`.
+
 ## [1.5.0] - 2026-11-09
 
 ### Added
