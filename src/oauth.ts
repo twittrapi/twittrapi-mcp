@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { parseXSession, type XSession } from "./client.js";
 
 /**
  * Resource-server side of OAuth for the hosted MCP server. The TwittrAPI dashboard is the
@@ -10,6 +11,11 @@ import { createHash } from "node:crypto";
 
 export const OAUTH_ACCESS_TOKEN_PREFIX = "twa_at_";
 export const OAUTH_SCOPE = "mcp";
+/**
+ * Granted when the customer ticked "act on my X account" on the consent page. The introspection then
+ * carries the X session saved in the dashboard, and the account tools are registered.
+ */
+export const OAUTH_WRITE_SCOPE = "x:write";
 
 export interface OAuthConfig {
   /** Canonical URL of this MCP endpoint, e.g. https://mcp.twittrapi.com/mcp (the token audience). */
@@ -52,7 +58,7 @@ export function protectedResourceMetadata(cfg: Pick<OAuthConfig, "resourceUrl" |
     resource: cfg.resourceUrl,
     authorization_servers: [cfg.issuer],
     bearer_methods_supported: ["header"],
-    scopes_supported: [OAUTH_SCOPE],
+    scopes_supported: [OAUTH_SCOPE, OAUTH_WRITE_SCOPE],
     resource_name: "TwittrAPI",
     resource_documentation: "https://twittrapi.com/docs/integrations",
   };
@@ -71,7 +77,7 @@ export function wwwAuthenticate(cfg: Pick<OAuthConfig, "resourceUrl"> | undefine
 }
 
 export type TokenCheck =
-  | { ok: true; apiKey: string; clientId: string; accountId: number; exp: number }
+  | { ok: true; apiKey: string; clientId: string; accountId: number; exp: number; xSession?: XSession }
   | { ok: false; reason: "invalid" | "unavailable" };
 
 interface CacheEntry {
@@ -163,13 +169,27 @@ export class TokenIntrospector {
     if (!scopes.includes(OAUTH_SCOPE)) return { ok: false, reason: "invalid" };
     if (exp * 1000 <= now) return { ok: false, reason: "invalid" };
     if (!extra || typeof extra.api_key !== "string" || !extra.api_key) return { ok: false, reason: "invalid" };
+    const xSession = scopes.includes(OAUTH_WRITE_SCOPE) ? storedSession(extra.x_session) : undefined;
     return {
       ok: true,
       apiKey: extra.api_key,
       clientId: typeof body.client_id === "string" ? body.client_id : "",
       accountId: typeof extra.account_id === "number" ? extra.account_id : 0,
       exp,
+      ...(xSession ? { xSession } : {}),
     };
+  }
+}
+
+/** The X session the dashboard sends for an x:write grant; undefined when missing or malformed. */
+function storedSession(raw: unknown): XSession | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" ? v : undefined);
+  try {
+    return parseXSession({ cookie: str(o.cookie), proxy: str(o.proxy), chatPasscode: str(o.chat_passcode) }, "oauth");
+  } catch {
+    return undefined;
   }
 }
 

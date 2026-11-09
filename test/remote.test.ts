@@ -11,6 +11,11 @@ const RESOURCE = "https://mcp.twittrapi.test/mcp";
 const ISSUER_KEY = "11111111-2222-4333-8444-555555555555";
 const GOOD_TOKEN = "twa_at_good-token-abcdefghijklmnopqrstuvwxyz";
 const OTHER_AUD_TOKEN = "twa_at_other-audience-abcdefghijklmnopqrst";
+const WRITE_TOKEN = "twa_at_write-token-abcdefghijklmnopqrstuvw";
+const SESSION_NO_SCOPE_TOKEN = "twa_at_session-no-scope-abcdefghijklmn";
+const STORED = { cookie: "auth_token=storedauthtoken123; ct0=storedct0value456", proxy: "http://u:storedpass789@proxy.test:8080" };
+const HEADER_COOKIE = "auth_token=headerauthtoken123; ct0=headerct0value456";
+const HEADER_PROXY = "http://u:headerpass789@proxy.test:8080";
 const SECRET = "s".repeat(40);
 
 interface Seen {
@@ -32,8 +37,10 @@ function listen(s: Server): Promise<string> {
 }
 
 beforeAll(async () => {
-  api = createServer((req, res) => {
-    apiSeen.push({ url: req.url ?? "", headers: req.headers });
+  api = createServer(async (req, res) => {
+    let body = "";
+    for await (const c of req) body += c;
+    apiSeen.push({ url: req.url ?? "", headers: req.headers, body });
     const url = new URL(req.url ?? "/", "http://x");
     res.setHeader("content-type", "application/json");
     const respond = () => res.end(JSON.stringify({ data: { username: "jack", id: "12" } }));
@@ -65,6 +72,12 @@ beforeAll(async () => {
       const base = { active: true, scope: "mcp", client_id: "twc_test", exp, twittrapi: { api_key: ISSUER_KEY, account_id: 7 } };
       if (token === GOOD_TOKEN) return res.end(JSON.stringify({ ...base, aud: RESOURCE }));
       if (token === OTHER_AUD_TOKEN) return res.end(JSON.stringify({ ...base, aud: "https://other.example/mcp" }));
+      if (token === WRITE_TOKEN) {
+        return res.end(JSON.stringify({ ...base, scope: "mcp x:write", aud: RESOURCE, twittrapi: { ...base.twittrapi, x_session: STORED } }));
+      }
+      if (token === SESSION_NO_SCOPE_TOKEN) {
+        return res.end(JSON.stringify({ ...base, aud: RESOURCE, twittrapi: { ...base.twittrapi, x_session: STORED } }));
+      }
       res.end(JSON.stringify({ active: false }));
     });
   });
@@ -134,7 +147,7 @@ describe("hosted mode: discovery and auth challenges", () => {
         resource: RESOURCE,
         authorization_servers: [issuerUrl],
         bearer_methods_supported: ["header"],
-        scopes_supported: ["mcp"],
+        scopes_supported: ["mcp", "x:write"],
       });
     }
   });
@@ -320,5 +333,71 @@ describe("helpers", () => {
     r1();
     r1();
     expect(l.inFlight("a")).toBe(1);
+  });
+});
+
+describe("hosted mode: account tools", () => {
+  let s: Awaited<ReturnType<typeof start>>;
+  beforeAll(async () => {
+    s = await start();
+  });
+  afterAll(async () => s.close());
+
+  async function connect(headers: Record<string, string>) {
+    const client = new Client({ name: "t", version: "0" });
+    await client.connect(new StreamableHTTPClientTransport(s.endpoint, { requestInit: { headers } }));
+    const names = (await client.listTools()).tools.map((t) => t.name);
+    return { client, names };
+  }
+
+  it("read only without a session", async () => {
+    const { client, names } = await connect({ "X-API-KEY": "my-api-key-123" });
+    await client.close();
+    expect(names).toContain("get_user_by_username");
+    expect(names).not.toContain("create_tweet");
+  });
+
+  it("X-Twitter-Cookie and X-Twitter-Proxy headers add the account tools for that request only", async () => {
+    apiSeen.length = 0;
+    const { client, names } = await connect({ "X-API-KEY": "my-api-key-123", "X-Twitter-Cookie": HEADER_COOKIE, "X-Twitter-Proxy": HEADER_PROXY });
+    expect(names).toContain("create_tweet");
+    const result = await client.callTool({ name: "create_tweet", arguments: { text: "hello" } });
+    await client.close();
+    expect(result.isError).toBeFalsy();
+    const post = apiSeen.find((r) => r.url.startsWith("/client/create"));
+    expect(post).toBeDefined();
+    expect(JSON.parse(post!.body!)).toMatchObject({ cookie: HEADER_COOKIE, proxy: HEADER_PROXY });
+    const logs = s.lines.join("\n");
+    expect(logs).not.toContain("headerauthtoken123");
+    expect(logs).not.toContain("headerpass789");
+    expect(s.lines.map((l) => JSON.parse(l)).some((l) => l.tool === "create_tweet" && l.x_session === "header")).toBe(true);
+  });
+
+  it("answers 400 for half a session or a malformed one, without echoing it", async () => {
+    const only = await fetch(s.endpoint, rpc(INIT, { "X-API-KEY": "k-123456", "X-Twitter-Cookie": HEADER_COOKIE }));
+    expect(only.status).toBe(400);
+    expect(await only.text()).toMatch(/X-Twitter-Proxy/);
+    const bad = await fetch(s.endpoint, rpc(INIT, { "X-API-KEY": "k-123456", "X-Twitter-Cookie": "foo=secretvalue99", "X-Twitter-Proxy": HEADER_PROXY }));
+    expect(bad.status).toBe(400);
+    const text = await bad.text();
+    expect(text).toMatch(/X-Twitter-Cookie must be/);
+    expect(text).not.toContain("secretvalue99");
+  });
+
+  it("OAuth grant with x:write uses the session saved in the dashboard", async () => {
+    apiSeen.length = 0;
+    const { client, names } = await connect({ Authorization: `Bearer ${WRITE_TOKEN}` });
+    expect(names).toContain("create_tweet");
+    await client.callTool({ name: "create_tweet", arguments: { text: "hello" } });
+    await client.close();
+    const post = apiSeen.find((r) => r.url.startsWith("/client/create"));
+    expect(JSON.parse(post!.body!)).toMatchObject({ cookie: STORED.cookie, proxy: STORED.proxy });
+    expect(post!.headers["x-api-key"]).toBe(ISSUER_KEY);
+  });
+
+  it("OAuth grant without x:write stays read only even if a session is sent along", async () => {
+    const { client, names } = await connect({ Authorization: `Bearer ${SESSION_NO_SCOPE_TOKEN}` });
+    await client.close();
+    expect(names).not.toContain("create_tweet");
   });
 });

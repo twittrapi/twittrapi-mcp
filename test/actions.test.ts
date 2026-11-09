@@ -328,7 +328,7 @@ describe("runAction", () => {
   it("explains a 401 from X as an expired session", async () => {
     const client = new TwittrApiClient({ mode: "direct", apiKey: "k", fetch: mockFetch(401, { errors: [{ message: "Could not authenticate you" }] }) });
     const res = await runAction(client, act("like_tweet"), session, { tweetId: "1" });
-    expect(text(res)).toMatch(/TWITTRAPI_X_COOKIE may be logged out/);
+    expect(text(res)).toMatch(/X session \(TWITTRAPI_X_COOKIE\) may be logged out/);
   });
 
   it("returns argument errors without calling the API", async () => {
@@ -359,8 +359,8 @@ describe("xSessionFromEnv", () => {
     expect(xSessionFromEnv({})).toBeUndefined();
     expect(xSessionFromEnv({ TWITTRAPI_X_COOKIE: COOKIE })).toBeUndefined();
     expect(xSessionFromEnv({ TWITTRAPI_X_PROXY: PROXY })).toBeUndefined();
-    expect(xSessionFromEnv({ TWITTRAPI_X_COOKIE: ` ${COOKIE} `, TWITTRAPI_X_PROXY: PROXY })).toEqual(session);
-    expect(xSessionFromEnv({ TWITTRAPI_X_COOKIE: COOKIE, TWITTRAPI_X_PROXY: PROXY, TWITTRAPI_X_CHAT_PASSCODE: "0042" })).toEqual({
+    expect(xSessionFromEnv({ TWITTRAPI_X_COOKIE: ` ${COOKIE} `, TWITTRAPI_X_PROXY: PROXY })).toEqual({ ...session, source: "env" });
+    expect(xSessionFromEnv({ TWITTRAPI_X_COOKIE: COOKIE, TWITTRAPI_X_PROXY: PROXY, TWITTRAPI_X_CHAT_PASSCODE: "0042" })).toEqual({ source: "env",
       ...session,
       chatPasscode: "0042",
     });
@@ -387,5 +387,18 @@ describe("scrubSession", () => {
   });
   it("leaves text alone without a session", () => {
     expect(scrubSession("abc", undefined)).toBe("abc");
+  });
+});
+
+describe("session hints by source", () => {
+  it("points a dashboard session to Connected apps and a header session to its header", async () => {
+    for (const [source, hint] of [
+      ["oauth", /saved in the dashboard.*Connected apps/],
+      ["header", /X-Twitter-Cookie/],
+    ] as const) {
+      const client = new TwittrApiClient({ mode: "direct", apiKey: "k", fetch: mockFetch(401, { error: "Unauthorized" }) });
+      const res = await runAction(client, act("like_tweet"), { ...session, source }, { tweetId: "20" });
+      expect(text(res)).toMatch(hint);
+    }
   });
 });

@@ -6,6 +6,18 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-09
+
+### Added
+
+- Account tools over HTTP: send `X-Twitter-Cookie` and `X-Twitter-Proxy` (plus
+  `X-Twitter-Chat-Passcode` for DMs) with a request and the account tools are listed for it. The
+  values live for that request only and are never stored, logged or returned. Half a session or a
+  malformed one is a `400`.
+- Hosted mode: OAuth tokens with the new `x:write` scope carry the X session the customer saved in
+  the dashboard, and the account tools are registered for them. Headers take precedence.
+- Error hints for an expired session name where it came from (environment, header or dashboard).
+
 ## [1.3.0] - 2026-11-04
 
 ### Added

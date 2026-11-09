@@ -76,19 +76,33 @@ export interface XSession {
   proxy: string;
   /** X Chat passcode (TWITTRAPI_X_CHAT_PASSCODE), needed to read and send direct messages. */
   chatPasscode?: string;
+  /** Where the session came from, for error hints: server env, request headers or the dashboard (OAuth). */
+  source?: XSessionSource;
 }
 
+export type XSessionSource = "env" | "header" | "oauth";
+
+/** Names of the three values in each source, for error messages that never echo the values. */
+export const X_SESSION_NAMES: Record<XSessionSource, { cookie: string; proxy: string; passcode: string }> = {
+  env: { cookie: "TWITTRAPI_X_COOKIE", proxy: "TWITTRAPI_X_PROXY", passcode: "TWITTRAPI_X_CHAT_PASSCODE" },
+  header: { cookie: "X-Twitter-Cookie", proxy: "X-Twitter-Proxy", passcode: "X-Twitter-Chat-Passcode" },
+  oauth: { cookie: "the X cookie saved in the dashboard", proxy: "the proxy saved in the dashboard", passcode: "the chat passcode saved in the dashboard" },
+};
+
 /**
- * Reads the X session from TWITTRAPI_X_COOKIE and TWITTRAPI_X_PROXY. Returns undefined when either is
- * missing. Throws (without echoing the values) when the cookie lacks auth_token or ct0, or the proxy
- * is not an http(s) URL with a host.
+ * Validates an X session. Returns undefined when cookie or proxy is missing. Throws (without echoing
+ * the values) when the cookie lacks auth_token or ct0, or the proxy is not an http(s) URL with a host.
  */
-export function xSessionFromEnv(env: NodeJS.ProcessEnv = process.env): XSession | undefined {
-  const cookie = env.TWITTRAPI_X_COOKIE?.trim();
-  const proxy = env.TWITTRAPI_X_PROXY?.trim();
+export function parseXSession(
+  values: { cookie?: string; proxy?: string; chatPasscode?: string },
+  source: XSessionSource,
+): XSession | undefined {
+  const names = X_SESSION_NAMES[source];
+  const cookie = values.cookie?.trim();
+  const proxy = values.proxy?.trim();
   if (!cookie || !proxy) return undefined;
   if (!/(?:^|;\s*)auth_token=[^;\s]+/.test(cookie) || !/(?:^|;\s*)ct0=[^;\s]+/.test(cookie)) {
-    throw new Error("TWITTRAPI_X_COOKIE must be the cookie of a logged-in x.com session and contain auth_token and ct0.");
+    throw new Error(`${names.cookie} must be the cookie of a logged-in x.com session and contain auth_token and ct0.`);
   }
   let url: URL | undefined;
   try {
@@ -97,10 +111,22 @@ export function xSessionFromEnv(env: NodeJS.ProcessEnv = process.env): XSession 
     url = undefined;
   }
   if (!url || !/^https?:$/.test(url.protocol) || !url.hostname) {
-    throw new Error("TWITTRAPI_X_PROXY must be a proxy URL like http://user:pass@host:port.");
+    throw new Error(`${names.proxy} must be a proxy URL like http://user:pass@host:port.`);
   }
-  const chatPasscode = env.TWITTRAPI_X_CHAT_PASSCODE?.trim();
-  return { cookie, proxy, ...(chatPasscode ? { chatPasscode } : {}) };
+  const chatPasscode = values.chatPasscode?.trim();
+  return { cookie, proxy, ...(chatPasscode ? { chatPasscode } : {}), source };
+}
+
+/**
+ * Reads the X session from TWITTRAPI_X_COOKIE and TWITTRAPI_X_PROXY. Returns undefined when either is
+ * missing. Throws (without echoing the values) when the cookie lacks auth_token or ct0, or the proxy
+ * is not an http(s) URL with a host.
+ */
+export function xSessionFromEnv(env: NodeJS.ProcessEnv = process.env): XSession | undefined {
+  return parseXSession(
+    { cookie: env.TWITTRAPI_X_COOKIE, proxy: env.TWITTRAPI_X_PROXY, chatPasscode: env.TWITTRAPI_X_CHAT_PASSCODE },
+    "env",
+  );
 }
 
 /**

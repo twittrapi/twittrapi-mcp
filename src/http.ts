@@ -1,7 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { DEFAULT_BASE_URL, TwittrApiClient, parseRapidApiHost, type ClientConfig, type ResponseFormat } from "./client.js";
+import {
+  DEFAULT_BASE_URL,
+  TwittrApiClient,
+  parseRapidApiHost,
+  parseXSession,
+  type ClientConfig,
+  type ResponseFormat,
+  type XSession,
+} from "./client.js";
 import { keyId, silentLogger, type Logger } from "./log.js";
 import {
   OAUTH_ACCESS_TOKEN_PREFIX,
@@ -91,6 +99,22 @@ export function credentialFromRequest(req: IncomingMessage, baseUrl?: string): C
   return { kind: "none" };
 }
 
+/**
+ * The caller's own X session from X-Twitter-Cookie and X-Twitter-Proxy (and X-Twitter-Chat-Passcode for
+ * DMs). The server keeps nothing: the values live for this one request. Both or neither must be set.
+ */
+export function xSessionFromRequest(req: IncomingMessage): { session?: XSession; error?: string } {
+  const cookie = header(req, "x-twitter-cookie");
+  const proxy = header(req, "x-twitter-proxy");
+  if (!cookie && !proxy) return {};
+  if (!cookie || !proxy) return { error: "Send both X-Twitter-Cookie and X-Twitter-Proxy to use the account tools, or neither." };
+  try {
+    return { session: parseXSession({ cookie, proxy, chatPasscode: header(req, "x-twitter-chat-passcode") }, "header") };
+  } catch (err) {
+    return { error: (err as Error).message };
+  }
+}
+
 /** Kept for compatibility: the API-key part of credentialFromRequest. */
 export function configFromRequest(req: IncomingMessage, baseUrl?: string): ClientConfig | undefined {
   const c = credentialFromRequest(req, baseUrl);
@@ -101,7 +125,7 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers":
-    "Authorization, Content-Type, Accept, X-API-KEY, x-rapidapi-key, x-rapidapi-host, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID",
+    "Authorization, Content-Type, Accept, X-API-KEY, x-rapidapi-key, x-rapidapi-host, X-Twitter-Cookie, X-Twitter-Proxy, X-Twitter-Chat-Passcode, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID",
   "Access-Control-Expose-Headers": "WWW-Authenticate, Mcp-Session-Id, Mcp-Protocol-Version, Retry-After",
   "Access-Control-Max-Age": "600",
 };
@@ -270,6 +294,12 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
       );
       return;
     }
+    const fromHeaders = xSessionFromRequest(req);
+    if (fromHeaders.error) {
+      sendJson(res, 400, rpcError(-32600, fromHeaders.error), CORS_HEADERS);
+      return;
+    }
+    let xSession = fromHeaders.session;
     if (cred.kind === "invalid") {
       ctx.auth = "rapidapi";
       sendJson(res, 400, rpcError(-32600, cred.message), CORS_HEADERS);
@@ -300,9 +330,15 @@ export function startHttpServer(opts: HttpOptions): Promise<Server> {
       ctx.client_id = check.clientId;
       ctx.account = check.accountId;
       config = { mode: "direct", apiKey: check.apiKey, baseUrl: opts.baseUrl || DEFAULT_BASE_URL };
+      // Headers win: a client that sends its own session uses that one
+      xSession ??= check.xSession;
     } else {
       ctx.auth = cred.config.mode === "rapidapi" ? "rapidapi" : "api_key";
       config = cred.config;
+    }
+    if (xSession) {
+      config = { ...config, xSession };
+      ctx.x_session = xSession.source;
     }
     const kid = keyId(config.apiKey!);
     ctx.key = kid;

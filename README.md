@@ -37,6 +37,17 @@ https://mcp.twittrapi.com/mcp
 With OAuth the app never sees your API key; calls are billed to your balance like any other call.
 Connected apps are listed (and can be disconnected) in the dashboard under **Connected apps**.
 
+The hosted server can also post, like, follow and send DMs from your own X account (the
+[account tools](#account-tools)), in two ways:
+
+- **Headers:** clients that let you set headers (Claude Code, Cursor, VS Code, scripts) send
+  `X-Twitter-Cookie` and `X-Twitter-Proxy` (and `X-Twitter-Chat-Passcode` for DMs) with every
+  request. The server uses them for that request only and stores nothing.
+- **Dashboard (OAuth):** save your X session once under **Connected apps** in the dashboard, then
+  tick "Act on my X account" when you allow an app. Works in Claude.ai and ChatGPT too.
+
+Guide: [twittrapi.com/docs/hosted-mcp#account-tools-post-like-dm](https://twittrapi.com/docs/hosted-mcp#account-tools-post-like-dm).
+
 ## What you need
 
 - Node.js 20 or newer
@@ -211,7 +222,10 @@ The cookie needs `auth_token` and `ct0`; direct messages also need `twid`.
 - Write tools are marked `readOnlyHint: false` (deletions and undo actions also
   `destructiveHint: true`), so clients ask before running them.
 - Each call is one billed API call, like the read tools.
-- Account tools are only available over stdio. HTTP mode and the hosted server do not offer them.
+- Over HTTP (your own instance or the hosted server) the session comes with the request: the
+  `X-Twitter-Cookie`, `X-Twitter-Proxy` and `X-Twitter-Chat-Passcode` headers, or, on the hosted
+  server, the session saved in the dashboard for an OAuth grant with the `x:write` scope. See
+  [HTTP mode](#http-mode-remote-hosting).
 
 ### Response format
 
@@ -280,8 +294,16 @@ caller's credentials:
   `twitter-aio.p.rapidapi.com` (must end in `.p.rapidapi.com`)
 - `Authorization: Bearer twa_at_...`: a TwittrAPI OAuth access token (hosted mode, below)
 
-The [account tools](#account-tools) are not offered in HTTP mode; `TWITTRAPI_X_COOKIE` and
-`TWITTRAPI_X_PROXY` are ignored there. `TWITTRAPI_BASE_URL` and `TWITTRAPI_RESPONSE_FORMAT` are still read from the environment; callers
+The [account tools](#account-tools) appear when the request also carries the caller's X session:
+
+- `X-Twitter-Cookie: auth_token=...; ct0=...; twid=u%3D...` and `X-Twitter-Proxy: http://user:pass@host:port`
+  (both or neither; `400` otherwise), plus `X-Twitter-Chat-Passcode` for the DM tools. The values
+  are used for that request only, never stored, logged or returned.
+- In hosted mode, an OAuth token with the `x:write` scope: the dashboard sends the session the
+  customer saved there. Headers take precedence over it.
+
+`TWITTRAPI_X_COOKIE` and `TWITTRAPI_X_PROXY` from the server's own environment are ignored in HTTP
+mode, so one deployment never acts for everyone with one account. `TWITTRAPI_BASE_URL` and `TWITTRAPI_RESPONSE_FORMAT` are still read from the environment; callers
 can pick the format per call with the `format` argument. Put the server behind HTTPS if it is
 reachable from the internet.
 
@@ -306,6 +328,9 @@ registration, PKCE S256, consent screen, rotating refresh tokens). The server:
   caches valid results for up to `OAUTH_CACHE_SECONDS` (30) and invalid ones for 5 s, and accepts
   only tokens whose audience is `MCP_PUBLIC_URL`;
 - calls the API with the key of the account behind the token. The key never reaches the client.
+- registers the account tools only for tokens with the `x:write` scope, which the customer grants
+  with a separate checkbox on the consent screen and only after saving an X session in the
+  dashboard. Deleting the saved session removes the tools within `OAUTH_CACHE_SECONDS`.
   Invalid or revoked tokens get `401` with `error="invalid_token"`; if the dashboard cannot be
   reached the answer is `503` with `Retry-After`, so clients keep their tokens.
 

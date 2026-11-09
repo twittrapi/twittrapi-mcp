@@ -10,6 +10,7 @@ import {
   type QueryValue,
   type ResponseFormat,
   type XSession,
+  X_SESSION_NAMES,
   scrubSession,
 } from "./client.js";
 import { ACTIONS, type ActionDef } from "./actions.js";
@@ -170,10 +171,15 @@ export async function runAction(
       err instanceof TwittrApiError || err instanceof Error ? err.message : `Unexpected error: ${String(err)}`;
     const status = err instanceof TwittrApiError ? err.status : undefined;
     if (status === 401 || status === 403 || status === 407) {
+      const names = X_SESSION_NAMES[session.source ?? "env"];
+      const renew =
+        session.source === "oauth"
+          ? "save a fresh cookie from x.com in the TwittrAPI dashboard under Connected apps"
+          : "copy a fresh cookie from x.com";
       message +=
         status === 407
-          ? " The proxy in TWITTRAPI_X_PROXY could not be reached."
-          : " If the API key is valid, the X session in TWITTRAPI_X_COOKIE may be logged out or expired: the user needs to copy a fresh cookie from x.com.";
+          ? ` The proxy (${names.proxy}) could not be reached.`
+          : ` If the API key is valid, the X session (${names.cookie}) may be logged out or expired: the user needs to ${renew}.`;
     }
     return { content: [{ type: "text", text: `Error: ${scrubSession(message, session)}` }], isError: true };
   }
